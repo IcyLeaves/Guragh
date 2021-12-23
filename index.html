@@ -71,6 +71,7 @@
         },
         //初始化图表
         initCharts() {
+          var that = this;
           // 基于准备好的dom，初始化echarts实例
           var myChart = echarts.init(document.getElementById("main"));
 
@@ -83,27 +84,18 @@
             series: [
               {
                 id: "a",
+                animation: false,
                 type: "graph",
                 layout: "none",
                 symbol: "circle",
                 symbolSize: 30,
-                draggable: true,
+                draggable: false,
                 roam: true,
                 label: {
                   show: true,
                 },
-                edgeSymbol: ["none", "arrow"],
-                edgeSymbolSize: [4, 10],
-                edgeLabel: {
-                  fontSize: 20,
-                },
-                data: this.allData.data,
-                links: this.allData.links,
-                lineStyle: {
-                  opacity: 0.9,
-                  width: 2,
-                  curveness: 0.5,
-                },
+                data: that.allData.data,
+                links: that.allData.links,
               },
             ],
           };
@@ -111,80 +103,83 @@
           // 使用刚指定的配置项和数据显示图表。
           myChart.setOption(option);
           //配置可拖拽系统
-          var onPointDragging = (dataIndex, pos) => {
-            var resPos = myChart.convertFromPixel({ seriesId: "a" }, pos);
-            this.allData.data[dataIndex].x = resPos[0];
-            this.allData.data[dataIndex].y = resPos[1];
-            console.log("正在拖拽虚拟节点", dataIndex, pos, this.allData.data);
-            // Update data
-            myChart.setOption({
-              series: [
-                {
-                  id: "a",
-                  data: this.allData.data,
-                },
-              ],
-            });
-          };
-          myChart.setOption({
-            graphic: echarts.util.map(this.allData.data, (item, dataIndex) => {
-              var resPos = myChart.convertToPixel({ seriesId: "a" }, [
-                item.x,
-                item.y,
-              ]);
-              return {
-                type: "circle",
-                x: resPos[0],
-                y: resPos[1],
-                shape: {
-                  cx: 0,
-                  cy: 0,
-                  r: 15,
-                },
-                invisible: false,
-                draggable: true,
-                ondrag: (e) => {
-                  console.log("拖拽前log", e);
-                  onPointDragging(dataIndex, [e.offsetX, e.offsetY]);
-                },
-                //  onmousemove: echarts.util.curry(showTooltip, dataIndex),
-                //  onmouseout: echarts.util.curry(hideTooltip, dataIndex),
-                z: 100,
-              };
-            }),
-          });
+
           var updatePosition = () => {
             myChart.setOption({
               graphic: echarts.util.map(
-                this.allData.data,
-                (item, dataIndex) => {
-                  console.log(item, index, "wwwwwwwww");
-                  var resPos = myChart.convertToPixel({ seriesId: "a" }, [
+                that.allData.data,
+                function (item, dataIndex) {
+                  var tmpPos = myChart.convertToPixel({ seriesIndex: 0 }, [
                     item.x,
                     item.y,
                   ]);
                   return {
-                    x: resPos[0],
-                    y: resPos[1],
+                    x: tmpPos[0],
+                    y: tmpPos[1],
                   };
                 }
               ),
             });
           };
+          var onPointDragging = function (dataIndex) {
+            //节点上图层拖拽执行的函数
+            var tmpPos = myChart.convertFromPixel(
+              { seriesIndex: 0 },
+              this.position
+            );
+            that.allData.data[dataIndex].x = tmpPos[0];
+            that.allData.data[dataIndex].y = tmpPos[1];
+            myChart.setOption(option);
+            updatePosition();
+          };
+          myChart.setOption({
+            graphic: echarts.util.map(
+              that.allData.data,
+              function (item, dataIndex) {
+                //使用图形元素组件在节点上划出一个隐形的图形覆盖住节点
+                var tmpPos = myChart.convertToPixel({ seriesIndex: 0 }, [
+                  item.x,
+                  item.y,
+                ]);
+                return {
+                  type: "circle",
+                  info: dataIndex,
+                  x: tmpPos[0],
+                  y: tmpPos[1],
+                  shape: {
+                    cx: 0,
+                    cy: 0,
+                    r: 20,
+                  },
+                  // silent:true,
+                  invisible: true,
+                  draggable: true,
+                  ondrag: echarts.util.curry(onPointDragging, dataIndex),
+                  z: 100, //使图层在最高层
+                };
+              }
+            ),
+          });
+
           window.addEventListener("resize", updatePosition);
           myChart.on("dataZoom", updatePosition);
-
+          myChart.on("graphRoam", updatePosition);
           //点击事件添加
           myChart.on("click", (params) => {
+            console.log(params);
             if (params.dataType == "node") {
-              this.onClickNodes(params);
+              this.onClickNodes(params.data.extra);
+            } else if (params.componentType == "graphic") {
+              this.onClickNodes(
+                this.allData.data[params.event.target.info].extra
+              );
             } else this.onClickEdges(params);
           });
         },
         //节点点击事件
         onClickNodes(params) {
           console.log("Node", params);
-          this.nodeInfo = params.data.extra;
+          this.nodeInfo = params;
         },
         onClickEdges(params) {
           console.log("Edge", params);

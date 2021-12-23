@@ -2,20 +2,25 @@
   "data": [
     {
       "name": "A",
-      "x": 100,
-      "y": 100,
-      "extra": {
-        "code": "hello,Aworld"
-      }
+      "x": 121.5582985710414,
+      "y": 89.64679494667752,
+      "extra": { "code": "hello,Aworld" }
     },
     {
       "name": "B",
-      "x": 100,
-      "y": 200,
-      "extra": {
-        "code": "hello,Bworld"
-      }
+      "x": 149.81902575073227,
+      "y": 142.81594078202335,
+      "extra": { "code": "hello,Bworld" }
+    },
+    {
+      "name": "C",
+      "x": 53.178222245273055,
+      "y": 109.77910026133264,
+      "extra": { "code": "hello,Cworld" }
     }
   ],
-  "links": []
+  "links": [
+    { "source": "A", "target": "B" },
+    { "source": "B", "target": "C" }
+  ]
 }
