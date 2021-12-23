@@ -87,8 +87,7 @@
                 animation: false,
                 type: "graph",
                 layout: "none",
-                symbol: "circle",
-                symbolSize: 30,
+                symbol: "rect",
                 draggable: false,
                 roam: true,
                 label: {
@@ -142,14 +141,15 @@
                   item.y,
                 ]);
                 return {
-                  type: "circle",
+                  type: "rect",
                   info: dataIndex,
                   x: tmpPos[0],
                   y: tmpPos[1],
                   shape: {
-                    cx: 0,
-                    cy: 0,
-                    r: 20,
+                    x: -item.symbolSize[0] / 2,
+                    y: -item.symbolSize[1] / 2,
+                    width: item.symbolSize[0],
+                    height: item.symbolSize[1],
                   },
                   // silent:true,
                   invisible: true,
