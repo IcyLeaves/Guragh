@@ -1,0 +1,198 @@
+<html>
+  <head>
+    <link href="element.css" rel="stylesheet" type="text/css" />
+  </head>
+
+  <body>
+    <div id="app">
+      <el-upload
+        action="#"
+        :auto-upload="false"
+        :on-change="openFile"
+        :show-file-list="false"
+      >
+        <el-button size="small" type="primary">点击上传</el-button>
+      </el-upload>
+      <el-button size="small" type="warning" v-on:click="tabIndex =0"
+        >图表视图</el-button
+      >
+      <el-button size="small" type="warning" v-on:click="showJSON()"
+        >JSON视图</el-button
+      >
+      <div
+        v-show="tabIndex===0"
+        id="main"
+        style="width: 600px; height: 400px"
+      ></div>
+      <div v-show="tabIndex===1">
+        <el-input
+          type="textarea"
+          autosize
+          placeholder="请输入内容"
+          v-model="allDataStr"
+          disabled
+        >
+        </el-input>
+      </div>
+      <h2>节点信息</h2>
+      <div>{{nodeInfo.code}}</div>
+    </div>
+  </body>
+  <script language="javascript" src="vue.js"></script>
+  <script language="javascript" src="element.js"></script>
+  <script language="javascript" src="echarts.js"></script>
+  <script>
+    var Default = new Vue({
+      el: "#app",
+      data: {
+        tabIndex: 0,
+        allDataStr: "{}",
+        allData: {},
+        nodeInfo: {},
+      },
+      methods: {
+        //上传你的文件
+        openFile(file) {
+          var reader = new FileReader();
+          reader.onload = () => {
+            if (reader.result) {
+              //打印文件内容
+              this.allData = JSON.parse(reader.result);
+              this.tabIndex = 0;
+              this.initCharts();
+            }
+          };
+          reader.readAsText(file.raw);
+        },
+        //显示JSON数据
+        showJSON() {
+          this.allDataStr = JSON.stringify(this.allData);
+          this.tabIndex = 1;
+        },
+        //初始化图表
+        initCharts() {
+          // 基于准备好的dom，初始化echarts实例
+          var myChart = echarts.init(document.getElementById("main"));
+
+          // 指定图表的配置项和数据
+          var option = {
+            title: {
+              text: "Basic Graph",
+            },
+            tooltip: {},
+            series: [
+              {
+                id: "a",
+                type: "graph",
+                layout: "none",
+                symbol: "circle",
+                symbolSize: 30,
+                draggable: true,
+                roam: true,
+                label: {
+                  show: true,
+                },
+                edgeSymbol: ["none", "arrow"],
+                edgeSymbolSize: [4, 10],
+                edgeLabel: {
+                  fontSize: 20,
+                },
+                data: this.allData.data,
+                links: this.allData.links,
+                lineStyle: {
+                  opacity: 0.9,
+                  width: 2,
+                  curveness: 0.5,
+                },
+              },
+            ],
+          };
+
+          // 使用刚指定的配置项和数据显示图表。
+          myChart.setOption(option);
+          //配置可拖拽系统
+          var onPointDragging = (dataIndex, pos) => {
+            var resPos = myChart.convertFromPixel({ seriesId: "a" }, pos);
+            this.allData.data[dataIndex].x = resPos[0];
+            this.allData.data[dataIndex].y = resPos[1];
+            console.log("正在拖拽虚拟节点", dataIndex, pos, this.allData.data);
+            // Update data
+            myChart.setOption({
+              series: [
+                {
+                  id: "a",
+                  data: this.allData.data,
+                },
+              ],
+            });
+          };
+          myChart.setOption({
+            graphic: echarts.util.map(this.allData.data, (item, dataIndex) => {
+              var resPos = myChart.convertToPixel({ seriesId: "a" }, [
+                item.x,
+                item.y,
+              ]);
+              return {
+                type: "circle",
+                x: resPos[0],
+                y: resPos[1],
+                shape: {
+                  cx: 0,
+                  cy: 0,
+                  r: 15,
+                },
+                invisible: false,
+                draggable: true,
+                ondrag: (e) => {
+                  console.log("拖拽前log", e);
+                  onPointDragging(dataIndex, [e.offsetX, e.offsetY]);
+                },
+                //  onmousemove: echarts.util.curry(showTooltip, dataIndex),
+                //  onmouseout: echarts.util.curry(hideTooltip, dataIndex),
+                z: 100,
+              };
+            }),
+          });
+          var updatePosition = () => {
+            myChart.setOption({
+              graphic: echarts.util.map(
+                this.allData.data,
+                (item, dataIndex) => {
+                  console.log(item, index, "wwwwwwwww");
+                  var resPos = myChart.convertToPixel({ seriesId: "a" }, [
+                    item.x,
+                    item.y,
+                  ]);
+                  return {
+                    x: resPos[0],
+                    y: resPos[1],
+                  };
+                }
+              ),
+            });
+          };
+          window.addEventListener("resize", updatePosition);
+          myChart.on("dataZoom", updatePosition);
+
+          //点击事件添加
+          myChart.on("click", (params) => {
+            if (params.dataType == "node") {
+              this.onClickNodes(params);
+            } else this.onClickEdges(params);
+          });
+        },
+        //节点点击事件
+        onClickNodes(params) {
+          console.log("Node", params);
+          this.nodeInfo = params.data.extra;
+        },
+        onClickEdges(params) {
+          console.log("Edge", params);
+        },
+      },
+      //   mounted: () => {
+
+      //   },
+    });
+  </script>
+</html>

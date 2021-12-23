@@ -1,0 +1,21 @@
+{
+  "data": [
+    {
+      "name": "A",
+      "x": 100,
+      "y": 100,
+      "extra": {
+        "code": "hello,Aworld"
+      }
+    },
+    {
+      "name": "B",
+      "x": 100,
+      "y": 200,
+      "extra": {
+        "code": "hello,Bworld"
+      }
+    }
+  ],
+  "links": []
+}
