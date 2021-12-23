@@ -1,29 +1,29 @@
 {
   "data": [
     {
-      "name": "OBSStable::rescan()",
-      "x": 121.5582985710414,
-      "y": 89.64679494667752,
-      "symbolSize": [60, 40],
+      "name": "somethingelse2123213",
+      "x": 100,
+      "y": 100,
+      "symbolSize": [160, 40],
       "extra": { "code": "hello,Aworld" }
     },
     {
-      "name": "SSTableRowIterator::next()",
-      "x": 149.81902575073227,
-      "y": 142.81594078202335,
-      "symbolSize": [30, 40],
+      "name": "SSTableRowIterator::next()523432434",
+      "x": 100,
+      "y": 150,
+      "symbolSize": [265, 40],
       "extra": { "code": "hello,Bworld" }
     },
     {
       "name": "somethingelse",
-      "x": 53.178222245273055,
-      "y": 109.77910026133264,
+      "x": 150,
+      "y": 150,
       "symbolSize": [120, 40],
       "extra": { "code": "hello,Cworld" }
     }
   ],
   "links": [
-    { "source": "OBSStable::rescan()", "target": "SSTableRowIterator::next()" },
-    { "source": "SSTableRowIterator::next()", "target": "somethingelse" }
+    { "source": 0, "target": 1 },
+    { "source": 1, "target": 2 }
   ]
 }

@@ -13,10 +13,13 @@
       >
         <el-button size="small" type="primary">点击上传</el-button>
       </el-upload>
-      <el-button size="small" type="warning" v-on:click="tabIndex =0"
+      <el-button size="small" type="primary" @click="refreshCharts"
+        >绘制一次</el-button
+      >
+      <el-button size="small" type="warning" @click="tabIndex =0"
         >图表视图</el-button
       >
-      <el-button size="small" type="warning" v-on:click="showJSON()"
+      <el-button size="small" type="warning" @click="showJSON()"
         >JSON视图</el-button
       >
       <div
@@ -36,6 +39,14 @@
       </div>
       <h2>节点信息</h2>
       <div>{{nodeInfo.code}}</div>
+      <el-form ref="nodeForm" :model="nodeInfo" label-width="80px">
+        <el-form-item label="函数名称">
+          <el-input
+            v-model="nodeInfo.name"
+            @input="bindInputFuncName"
+          ></el-input>
+        </el-form-item>
+      </el-form>
     </div>
   </body>
   <script language="javascript" src="vue.js"></script>
@@ -50,7 +61,27 @@
         allData: {},
         nodeInfo: {},
       },
+      watch: {
+        allData: {
+          handler: function (newValue, oldValue) {
+            var myChart = echarts.init(document.getElementById("main"));
+            myChart.setOption({
+              series: [
+                {
+                  data: newValue.data,
+                  links: newValue.links,
+                },
+              ],
+            });
+          },
+          deep: true,
+        },
+      },
       methods: {
+        // 根据FuncName查找data中的下标
+        selectIdxByFuncName(name) {
+          return this.allData.data.findIndex((x) => x.name === name);
+        },
         //上传你的文件
         openFile(file) {
           var reader = new FileReader();
@@ -59,7 +90,7 @@
               //打印文件内容
               this.allData = JSON.parse(reader.result);
               this.tabIndex = 0;
-              this.initCharts();
+              this.refreshCharts();
             }
           };
           reader.readAsText(file.raw);
@@ -69,12 +100,18 @@
           this.allDataStr = JSON.stringify(this.allData);
           this.tabIndex = 1;
         },
+        //重新init一下图表
+        refreshCharts() {
+          var myChart = echarts.init(document.getElementById("main"));
+          myChart.clear();
+          myChart.resize();
+          this.initCharts();
+        },
         //初始化图表
         initCharts() {
           var that = this;
           // 基于准备好的dom，初始化echarts实例
           var myChart = echarts.init(document.getElementById("main"));
-
           // 指定图表的配置项和数据
           var option = {
             title: {
@@ -89,6 +126,7 @@
                 layout: "none",
                 symbol: "rect",
                 draggable: false,
+                edgeSymbol: ["", "arrow"],
                 roam: true,
                 label: {
                   show: true,
@@ -141,6 +179,7 @@
                   item.y,
                 ]);
                 return {
+                  id: dataIndex,
                   type: "rect",
                   info: dataIndex,
                   x: tmpPos[0],
@@ -166,14 +205,11 @@
           myChart.on("graphRoam", updatePosition);
           //点击事件添加
           myChart.on("click", (params) => {
-            console.log(params);
             if (params.dataType == "node") {
-              this.onClickNodes(params.data.extra);
+              that.onClickNodes(params.data);
             } else if (params.componentType == "graphic") {
-              this.onClickNodes(
-                this.allData.data[params.event.target.info].extra
-              );
-            } else this.onClickEdges(params);
+              that.onClickNodes(that.allData.data[params.event.target.info]);
+            } else that.onClickEdges(params);
           });
         },
         //节点点击事件
@@ -183,6 +219,23 @@
         },
         onClickEdges(params) {
           console.log("Edge", params);
+        },
+        //输入函数名时要扩展节点的宽
+        bindInputFuncName(e) {
+          var idx = this.selectIdxByFuncName(e);
+          this.nodeInfo.symbolSize[0] = 20 + e.length * 7;
+          var myChart = echarts.init(document.getElementById("main"));
+          myChart.setOption({
+            graphic: [
+              {
+                id: idx,
+                shape: {
+                  x: -this.nodeInfo.symbolSize[0] / 2,
+                  width: this.nodeInfo.symbolSize[0],
+                },
+              },
+            ],
+          });
         },
       },
       //   mounted: () => {
