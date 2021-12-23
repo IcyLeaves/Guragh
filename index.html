@@ -53,11 +53,23 @@
               ></el-input>
             </el-form-item>
             <div id="editor" style="height: 600px; font-size: 20px">
-              {{nodeInfo.extra?nodeInfo.extra.code:''}}
+              欢迎使用Ace
             </div>
           </el-form></el-tab-pane
         >
-        <el-tab-pane label="节点" name="node"></el-tab-pane>
+        <el-tab-pane label="节点" name="node"
+          ><div>源节点</div>
+          <el-card v-for="sNode in sourceNodeArray" :key="sNode">
+            <div>{{allData.data[sNode].name}}</div>
+          </el-card>
+          <div>目标节点</div>
+          <el-card v-for="tNode in targetNodeArray" :key="tNode">
+            <div>{{allData.data[tNode].name}}</div>
+          </el-card>
+          <el-button type="success" @click="insertNewTargetNode()"
+            >添加节点</el-button
+          ></el-tab-pane
+        >
       </el-tabs>
     </div>
   </body>
@@ -78,6 +90,9 @@
         allData: {},
         nodeInfo: {},
         activeTab: "func",
+        sourceNodeArray: [],
+        targetNodeArray: [],
+        aceEditor: null,
       },
       watch: {
         allData: {
@@ -94,12 +109,55 @@
           },
           deep: true,
         },
+        activeTab: {
+          handler: function (newValue, oldValue) {
+            if (newValue === "node") this.initNodesArray();
+          },
+        },
+        nodeInfo: {
+          handler: function (n, o) {
+            var editor = ace.edit("editor");
+            editor.session.setValue(n.extra.code);
+            this.initNodesArray();
+          },
+        },
       },
       methods: {
-        // 根据FuncName查找data中的下标
+        // 根据FuncName查找data中的第一个下标
         selectIdxByFuncName(name) {
           return this.allData.data.findIndex((x) => x.name === name);
         },
+        // 根据nodeid查找{[所有source],[所有target]}
+        selectAllSourceAndTargetByNodeId(nodeId) {
+          var sources = [];
+          var targets = [];
+          for (var l in this.allData.links) {
+            var tmp = this.allData.links[l];
+            if (tmp.target === nodeId) sources.push(tmp.source);
+            if (tmp.source === nodeId) targets.push(tmp.target);
+          }
+          return { sources, targets };
+        },
+        insertNewTargetNode() {
+          if (this.nodeInfo.name) {
+            var nodeId = this.selectIdxByFuncName(this.nodeInfo.name);
+
+            var sourceNode = this.allData.data[nodeId];
+            this.allData.data.push({
+              name: sourceNode.name + Math.floor(Math.random() * 1000),
+              x: sourceNode.x + Math.floor(Math.random() * 100),
+              y: sourceNode.y + Math.floor(Math.random() * 100),
+              symbolSize: sourceNode.symbolSize,
+              extra: { code: "hello,world" },
+            });
+            this.allData.links.push({
+              source: nodeId,
+              target: this.allData.data.length - 1,
+            });
+            this.refreshCharts();
+          }
+        },
+        //----------------------上面为涉及allData的复杂SQL----------------------
         //上传你的文件
         openFile(file) {
           var reader = new FileReader();
@@ -235,6 +293,7 @@
           this.nodeInfo = params;
         },
         onClickEdges(params) {},
+        //----------------------Tab 1----------------------
         //输入函数名时要扩展节点的宽
         bindInputFuncName(e) {
           var idx = this.selectIdxByFuncName(e);
@@ -252,11 +311,29 @@
             ],
           });
         },
+        aceChanged(e) {
+          var editor = ace.edit("editor");
+          if (this.nodeInfo.name) {
+            this.nodeInfo.extra.code = editor.getValue();
+          }
+        },
+        //----------------------Tab 2----------------------
+        //切换到节点标签时计算节点
+        initNodesArray() {
+          if (this.nodeInfo && this.nodeInfo.name) {
+            var idx = this.selectIdxByFuncName(this.nodeInfo.name);
+            var { sources, targets } =
+              this.selectAllSourceAndTargetByNodeId(idx);
+            this.sourceNodeArray = sources;
+            this.targetNodeArray = targets;
+          }
+        },
       },
-      mounted: () => {
+      mounted: function () {
         var editor = ace.edit("editor");
         editor.setTheme("ace/theme/monokai");
         editor.session.setMode("ace/mode/c_cpp");
+        editor.on("change", this.aceChanged);
       },
     });
   </script>
