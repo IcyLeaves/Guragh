@@ -15,7 +15,7 @@
           <el-button size="small" type="primary">点击上传</el-button>
         </el-upload>
         <el-button size="small" type="primary" @click="refreshCharts"
-          >绘制一次</el-button
+          >适应窗口</el-button
         >
         <el-button size="small" type="warning" @click="tabIndex =0"
           >图表视图</el-button
@@ -28,7 +28,7 @@
         <div
           v-show="tabIndex===0"
           id="main"
-          style="width: 600px; height: 400px"
+          style="width: 1200px; height: 400px; border: 1px solid blue"
         ></div>
         <div v-show="tabIndex===1">
           <el-input
@@ -44,7 +44,7 @@
 
       <h2>节点信息</h2>
       <el-tabs v-model="activeTab">
-        <el-tab-pane label="函数" name="func"
+        <el-tab-pane label="函数" name="func" :disabled="!nodeInfo.name"
           ><el-form ref="nodeForm" :model="nodeInfo" label-width="80px">
             <el-form-item label="函数名称">
               <el-input
@@ -53,11 +53,15 @@
               ></el-input>
             </el-form-item>
             <div id="editor" style="height: 600px; font-size: 20px">
-              欢迎使用Ace
+              欢迎使用Ace "https://ace.c9.io/"
             </div>
           </el-form></el-tab-pane
         >
-        <el-tab-pane label="节点" name="node"
+        <el-tab-pane
+          label="节点"
+          name="node"
+          :disabled="!nodeInfo.name"
+          style="margin-bottom: 200px"
           ><div>源节点</div>
           <el-card v-for="sNode in sourceNodeArray" :key="sNode">
             <div>{{allData.data[sNode].name}}</div>
@@ -66,8 +70,17 @@
           <el-card v-for="tNode in targetNodeArray" :key="tNode">
             <div>{{allData.data[tNode].name}}</div>
           </el-card>
+
+          <el-autocomplete
+            class="inline-input"
+            style="width: 800px"
+            v-model="newTargetNodeName"
+            :fetch-suggestions="querySearchFuncName"
+            placeholder="请输入节点名"
+            :trigger-on-focus="false"
+          ></el-autocomplete>
           <el-button type="success" @click="insertNewTargetNode()"
-            >添加节点</el-button
+            >添加新节点/连接已有节点</el-button
           ></el-tab-pane
         >
       </el-tabs>
@@ -93,6 +106,7 @@
         sourceNodeArray: [],
         targetNodeArray: [],
         aceEditor: null,
+        newTargetNodeName: "",
       },
       watch: {
         allData: {
@@ -111,7 +125,11 @@
         },
         activeTab: {
           handler: function (newValue, oldValue) {
-            if (newValue === "node") this.initNodesArray();
+            if (newValue === "node") {
+              this.initNodesArray();
+              this.newTargetNodeName =
+                this.nodeInfo.name + Math.floor(Math.random() * 1000);
+            }
           },
         },
         nodeInfo: {
@@ -138,23 +156,60 @@
           }
           return { sources, targets };
         },
-        insertNewTargetNode() {
-          if (this.nodeInfo.name) {
-            var nodeId = this.selectIdxByFuncName(this.nodeInfo.name);
+        createFilter(queryString) {
+          return (name) => {
+            return (
+              name.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+            );
+          };
+        },
+        querySearchFuncName(queryString, cb) {
+          var names = this.allData.data.map((x) => {
+            return { value: x.name };
+          });
+          var results = queryString
+            ? names.filter(this.createFilter(queryString))
+            : names;
 
-            var sourceNode = this.allData.data[nodeId];
-            this.allData.data.push({
-              name: sourceNode.name + Math.floor(Math.random() * 1000),
-              x: sourceNode.x + Math.floor(Math.random() * 100),
-              y: sourceNode.y + Math.floor(Math.random() * 100),
-              symbolSize: sourceNode.symbolSize,
-              extra: { code: "hello,world" },
-            });
-            this.allData.links.push({
-              source: nodeId,
-              target: this.allData.data.length - 1,
-            });
-            this.refreshCharts();
+          // 调用 callback 返回建议列表的数据
+          cb(results);
+        },
+        insertNewTargetNode() {
+          if (this.newTargetNodeName) {
+            var sourceNodeId = this.selectIdxByFuncName(this.nodeInfo.name);
+            //先查找是否是新节点
+            var targetNodeId = this.selectIdxByFuncName(this.newTargetNodeName);
+            if (targetNodeId >= 0) {
+              //push前确保是新的连接
+              var i;
+              for (i = 0; i < this.targetNodeArray.length; i++) {
+                if (targetNodeId == this.targetNodeArray[i]) {
+                  this.$message.error("不允许添加重复连线");
+                  return;
+                }
+              }
+              this.allData.links.push({
+                source: sourceNodeId,
+                target: targetNodeId,
+              });
+            } else {
+              var sourceNode = this.allData.data[sourceNodeId];
+              this.allData.data.push({
+                name: this.newTargetNodeName,
+                x: sourceNode.x + Math.floor(Math.random() * 100),
+                y: sourceNode.y + Math.floor(Math.random() * 100),
+                symbolSize: sourceNode.symbolSize,
+                extra: { code: "hello,world" },
+              });
+              this.allData.links.push({
+                source: sourceNodeId,
+                target: this.allData.data.length - 1,
+              });
+              this.refreshCharts();
+            }
+            this.initNodesArray();
+            this.newTargetNodeName =
+              this.nodeInfo.name + Math.floor(Math.random() * 1000);
           }
         },
         //----------------------上面为涉及allData的复杂SQL----------------------
