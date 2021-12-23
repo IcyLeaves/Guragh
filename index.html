@@ -5,53 +5,70 @@
 
   <body>
     <div id="app">
-      <el-upload
-        action="#"
-        :auto-upload="false"
-        :on-change="openFile"
-        :show-file-list="false"
-      >
-        <el-button size="small" type="primary">点击上传</el-button>
-      </el-upload>
-      <el-button size="small" type="primary" @click="refreshCharts"
-        >绘制一次</el-button
-      >
-      <el-button size="small" type="warning" @click="tabIndex =0"
-        >图表视图</el-button
-      >
-      <el-button size="small" type="warning" @click="showJSON()"
-        >JSON视图</el-button
-      >
-      <div
-        v-show="tabIndex===0"
-        id="main"
-        style="width: 600px; height: 400px"
-      ></div>
-      <div v-show="tabIndex===1">
-        <el-input
-          type="textarea"
-          autosize
-          placeholder="请输入内容"
-          v-model="allDataStr"
-          disabled
+      <div name="按钮组">
+        <el-upload
+          action="#"
+          :auto-upload="false"
+          :on-change="openFile"
+          :show-file-list="false"
         >
-        </el-input>
+          <el-button size="small" type="primary">点击上传</el-button>
+        </el-upload>
+        <el-button size="small" type="primary" @click="refreshCharts"
+          >绘制一次</el-button
+        >
+        <el-button size="small" type="warning" @click="tabIndex =0"
+          >图表视图</el-button
+        >
+        <el-button size="small" type="warning" @click="showJSON()"
+          >JSON视图</el-button
+        >
       </div>
-      <h2>节点信息</h2>
-      <div>{{nodeInfo.code}}</div>
-      <el-form ref="nodeForm" :model="nodeInfo" label-width="80px">
-        <el-form-item label="函数名称">
+      <div name="图表组">
+        <div
+          v-show="tabIndex===0"
+          id="main"
+          style="width: 600px; height: 400px"
+        ></div>
+        <div v-show="tabIndex===1">
           <el-input
-            v-model="nodeInfo.name"
-            @input="bindInputFuncName"
-          ></el-input>
-        </el-form-item>
-      </el-form>
+            type="textarea"
+            autosize
+            placeholder="请输入内容"
+            v-model="allDataStr"
+            disabled
+          >
+          </el-input>
+        </div>
+      </div>
+
+      <h2>节点信息</h2>
+      <el-tabs v-model="activeTab">
+        <el-tab-pane label="函数" name="func"
+          ><el-form ref="nodeForm" :model="nodeInfo" label-width="80px">
+            <el-form-item label="函数名称">
+              <el-input
+                v-model="nodeInfo.name"
+                @input="bindInputFuncName"
+              ></el-input>
+            </el-form-item>
+            <div id="editor" style="height: 600px; font-size: 20px">
+              {{nodeInfo.extra?nodeInfo.extra.code:''}}
+            </div>
+          </el-form></el-tab-pane
+        >
+        <el-tab-pane label="节点" name="node"></el-tab-pane>
+      </el-tabs>
     </div>
   </body>
   <script language="javascript" src="vue.js"></script>
   <script language="javascript" src="element.js"></script>
   <script language="javascript" src="echarts.js"></script>
+  <script
+    src="ace-builds/src-noconflict/ace.js"
+    type="text/javascript"
+    charset="utf-8"
+  ></script>
   <script>
     var Default = new Vue({
       el: "#app",
@@ -60,6 +77,7 @@
         allDataStr: "{}",
         allData: {},
         nodeInfo: {},
+        activeTab: "func",
       },
       watch: {
         allData: {
@@ -214,12 +232,9 @@
         },
         //节点点击事件
         onClickNodes(params) {
-          console.log("Node", params);
           this.nodeInfo = params;
         },
-        onClickEdges(params) {
-          console.log("Edge", params);
-        },
+        onClickEdges(params) {},
         //输入函数名时要扩展节点的宽
         bindInputFuncName(e) {
           var idx = this.selectIdxByFuncName(e);
@@ -238,9 +253,11 @@
           });
         },
       },
-      //   mounted: () => {
-
-      //   },
+      mounted: () => {
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/c_cpp");
+      },
     });
   </script>
 </html>
