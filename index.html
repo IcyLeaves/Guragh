@@ -1,6 +1,11 @@
 <html>
   <head>
     <link href="element.css" rel="stylesheet" type="text/css" />
+    <style type="text/css">
+      .o-input input {
+        font-family: consolas;
+      }
+    </style>
   </head>
 
   <body>
@@ -43,47 +48,46 @@
       </div>
 
       <h2>节点信息</h2>
-      <el-tabs v-model="activeTab">
-        <el-tab-pane label="函数" name="func" :disabled="!nodeInfo.name"
-          ><el-form ref="nodeForm" :model="nodeInfo" label-width="80px">
-            <el-form-item label="函数名称">
-              <el-input
-                v-model="nodeInfo.name"
-                @input="bindInputFuncName"
-              ></el-input>
-            </el-form-item>
-            <div id="editor" style="height: 600px; font-size: 20px">
-              欢迎使用Ace "https://ace.c9.io/"
-            </div>
-          </el-form></el-tab-pane
-        >
-        <el-tab-pane
-          label="节点"
-          name="node"
-          :disabled="!nodeInfo.name"
-          style="margin-bottom: 200px"
-          ><div>源节点</div>
-          <el-card v-for="sNode in sourceNodeArray" :key="sNode">
-            <div>{{allData.data[sNode].name}}</div>
-          </el-card>
-          <div>目标节点</div>
-          <el-card v-for="tNode in targetNodeArray" :key="tNode">
-            <div>{{allData.data[tNode].name}}</div>
-          </el-card>
+      <div v-show="nodeInfo.name">
+        <el-tabs v-model="activeTab">
+          <el-tab-pane label="函数" name="func"
+            ><el-form ref="nodeForm" :model="nodeInfo" label-width="80px">
+              <el-form-item label="函数名称">
+                <el-input
+                  v-model="nodeInfo.name"
+                  @input="bindInputFuncName"
+                  class="o-input"
+                ></el-input>
+              </el-form-item>
+              <div id="editor" style="height: 600px; font-size: 20px">
+                欢迎使用Ace "https://ace.c9.io/"
+              </div>
+            </el-form></el-tab-pane
+          >
+          <el-tab-pane label="节点" name="node" style="margin-bottom: 200px"
+            ><div>源节点</div>
+            <el-card v-for="sNode in sourceNodeArray" :key="sNode">
+              <div>{{allData.data[sNode].name}}</div>
+            </el-card>
+            <div>目标节点</div>
+            <el-card v-for="tNode in targetNodeArray" :key="tNode">
+              <div>{{allData.data[tNode].name}}</div>
+            </el-card>
 
-          <el-autocomplete
-            class="inline-input"
-            style="width: 800px"
-            v-model="newTargetNodeName"
-            :fetch-suggestions="querySearchFuncName"
-            placeholder="请输入节点名"
-            :trigger-on-focus="false"
-          ></el-autocomplete>
-          <el-button type="success" @click="insertNewTargetNode()"
-            >添加新节点/连接已有节点</el-button
-          ></el-tab-pane
-        >
-      </el-tabs>
+            <el-autocomplete
+              class="inline-input"
+              style="width: 800px"
+              v-model="newTargetNodeName"
+              :fetch-suggestions="querySearchFuncName"
+              placeholder="请输入节点名"
+              :trigger-on-focus="false"
+            ></el-autocomplete>
+            <el-button type="success" @click="insertNewTargetNode()"
+              >添加新节点/连接已有节点</el-button
+            ></el-tab-pane
+          >
+        </el-tabs>
+      </div>
     </div>
   </body>
   <script language="javascript" src="vue.js"></script>
@@ -95,6 +99,17 @@
     charset="utf-8"
   ></script>
   <script>
+    var categories = [
+      {
+        name: "蓝色",
+        itemStyle: {
+          color: "#5470C5",
+        },
+        label: {
+          show: true,
+        },
+      },
+    ];
     var Default = new Vue({
       el: "#app",
       data: {
@@ -261,6 +276,7 @@
                 roam: true,
                 label: {
                   show: true,
+                  fontFamily: "Consolas",
                 },
                 data: that.allData.data,
                 links: that.allData.links,
