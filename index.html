@@ -49,7 +49,7 @@
 
       <h2>节点信息</h2>
       <div v-show="nodeInfo.name">
-        <el-tabs v-model="activeTab">
+        <el-tabs v-model="activeTab" style="margin-bottom: 200px">
           <el-tab-pane label="函数" name="func"
             ><el-form ref="nodeForm" :model="nodeInfo" label-width="80px">
               <el-form-item label="函数名称">
@@ -64,7 +64,7 @@
               </div>
             </el-form></el-tab-pane
           >
-          <el-tab-pane label="节点" name="node" style="margin-bottom: 200px"
+          <el-tab-pane label="节点" name="node"
             ><div>源节点</div>
             <el-card v-for="sNode in sourceNodeArray" :key="sNode">
               <div>{{allData.data[sNode].name}}</div>
@@ -85,7 +85,15 @@
             <el-button type="success" @click="insertNewTargetNode()"
               >添加新节点/连接已有节点</el-button
             ></el-tab-pane
-          >
+          ><el-tab-pane label="样式" name="kind">
+            <el-form ref="kindForm" :model="nodeCategory" label-width="120px">
+              <el-form-item label="节点背景色">
+                <el-color-picker
+                  show-alpha
+                  v-model="nodeCategory.itemStyle.color"
+                ></el-color-picker>
+              </el-form-item> </el-form
+          ></el-tab-pane>
         </el-tabs>
       </div>
     </div>
@@ -99,17 +107,6 @@
     charset="utf-8"
   ></script>
   <script>
-    var categories = [
-      {
-        name: "蓝色",
-        itemStyle: {
-          color: "#5470C5",
-        },
-        label: {
-          show: true,
-        },
-      },
-    ];
     var Default = new Vue({
       el: "#app",
       data: {
@@ -117,6 +114,7 @@
         allDataStr: "{}",
         allData: {},
         nodeInfo: {},
+        nodeCategory: { name: "", itemStyle: { color: "" } },
         activeTab: "func",
         sourceNodeArray: [],
         targetNodeArray: [],
@@ -132,6 +130,7 @@
                 {
                   data: newValue.data,
                   links: newValue.links,
+                  categories: newValue.categories,
                 },
               ],
             });
@@ -144,6 +143,8 @@
               this.initNodesArray();
               this.newTargetNodeName =
                 this.nodeInfo.name + Math.floor(Math.random() * 1000);
+            } else if (newValue == "kind") {
+              this.initNodeCategory();
             }
           },
         },
@@ -280,6 +281,7 @@
                 },
                 data: that.allData.data,
                 links: that.allData.links,
+                categories: that.allData.categories,
               },
             ],
           };
@@ -397,6 +399,12 @@
               this.selectAllSourceAndTargetByNodeId(idx);
             this.sourceNodeArray = sources;
             this.targetNodeArray = targets;
+          }
+        },
+        //----------------------Tab 3----------------------
+        initNodeCategory() {
+          if (this.nodeInfo && this.nodeInfo.name) {
+            this.nodeCategory = this.allData.categories[this.nodeInfo.category];
           }
         },
       },

@@ -4,6 +4,7 @@
       "name": "somethingelse2123213",
       "x": 100,
       "y": 100,
+      "category": 0,
       "symbolSize": [160, 40],
       "extra": { "code": "hello,Aworld" }
     },
@@ -11,6 +12,7 @@
       "name": "SSTableRowIterator::next()523432434",
       "x": 100,
       "y": 150,
+      "category": 0,
       "symbolSize": [265, 40],
       "extra": { "code": "hello,Bworld" }
     },
@@ -18,6 +20,7 @@
       "name": "somethingelse",
       "x": 150,
       "y": 150,
+      "category": 0,
       "symbolSize": [120, 40],
       "extra": { "code": "hello,Cworld" }
     }
@@ -25,5 +28,13 @@
   "links": [
     { "source": 0, "target": 1 },
     { "source": 1, "target": 2 }
+  ],
+  "categories": [
+    {
+      "name": "蓝色",
+      "itemStyle": {
+        "color": "#5470C5"
+      }
+    }
   ]
 }
