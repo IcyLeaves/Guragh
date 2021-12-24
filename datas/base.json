@@ -35,6 +35,12 @@
       "itemStyle": {
         "color": "#5470C5"
       }
+    },
+    {
+      "name": "紫色",
+      "itemStyle": {
+        "color": "#C678DD"
+      }
     }
   ]
 }

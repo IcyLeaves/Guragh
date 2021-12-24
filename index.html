@@ -5,6 +5,9 @@
       .o-input input {
         font-family: consolas;
       }
+      .el-card {
+        font-family: consolas;
+      }
     </style>
   </head>
 
@@ -86,6 +89,34 @@
               >添加新节点/连接已有节点</el-button
             ></el-tab-pane
           ><el-tab-pane label="样式" name="kind">
+            <div
+              style="
+                font-weight: bolder;
+                margin-right: 50px;
+                display: inline-block;
+              "
+            >
+              选择样式
+            </div>
+            <el-dropdown trigger="click" @command="updateNodeCategory">
+              <span class="el-dropdown-link">
+                {{nodeCategory.name}}<i
+                  class="el-icon-arrow-down el-icon--right"
+                ></i>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item
+                  v-for="(c,idx) in allData.categories"
+                  :key="c.name"
+                  :command="idx"
+                  >{{c.name}}</el-dropdown-item
+                >
+                <el-dropdown-item divided :command="-1"
+                  >新样式</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </el-dropdown>
+            <el-divider></el-divider>
             <el-form ref="kindForm" :model="nodeCategory" label-width="120px">
               <el-form-item label="节点背景色">
                 <el-color-picker
@@ -406,6 +437,10 @@
           if (this.nodeInfo && this.nodeInfo.name) {
             this.nodeCategory = this.allData.categories[this.nodeInfo.category];
           }
+        },
+        updateNodeCategory(e) {
+          this.nodeCategory = this.allData.categories[e];
+          this.nodeInfo.category = e;
         },
       },
       mounted: function () {
