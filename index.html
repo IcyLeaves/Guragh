@@ -8,6 +8,10 @@
       .el-card {
         font-family: consolas;
       }
+      .el-dropdown-link {
+        cursor: pointer;
+        color: #409eff;
+      }
     </style>
   </head>
 
@@ -112,12 +116,15 @@
                   >{{c.name}}</el-dropdown-item
                 >
                 <el-dropdown-item divided :command="-1"
-                  >新样式</el-dropdown-item
+                  >+ 新样式</el-dropdown-item
                 >
               </el-dropdown-menu>
             </el-dropdown>
             <el-divider></el-divider>
             <el-form ref="kindForm" :model="nodeCategory" label-width="120px">
+              <el-form-item label="样式名称">
+                <el-input v-model="nodeCategory.name"></el-input>
+              </el-form-item>
               <el-form-item label="节点背景色">
                 <el-color-picker
                   show-alpha
@@ -439,8 +446,20 @@
           }
         },
         updateNodeCategory(e) {
-          this.nodeCategory = this.allData.categories[e];
-          this.nodeInfo.category = e;
+          if (e >= 0) {
+            this.nodeCategory = this.allData.categories[e];
+            this.nodeInfo.category = e;
+          } else {
+            this.allData.categories.push({
+              name: "新样式" + Math.floor(Math.random() * 100),
+              itemStyle: {
+                color: "#000000",
+              },
+            });
+            this.nodeCategory =
+              this.allData.categories[this.allData.categories.length - 1];
+            this.nodeInfo.category = this.allData.categories.length - 1;
+          }
         },
       },
       mounted: function () {
