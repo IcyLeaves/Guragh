@@ -246,24 +246,23 @@
                 source: sourceNodeId,
                 target: targetNodeId,
               });
+              //如果连接了一个老节点，马上换成新名字以防止再次连接
+              this.newTargetNodeName =
+                this.nodeInfo.name + Math.floor(Math.random() * 1000);
             } else {
+              //新节点
               var sourceNode = this.allData.data[sourceNodeId];
               this.allData.data.push({
                 name: this.newTargetNodeName,
                 x: sourceNode.x + Math.floor(Math.random() * 100),
                 y: sourceNode.y + Math.floor(Math.random() * 100),
                 symbolSize: sourceNode.symbolSize,
+                category: 0,
                 extra: { code: "hello,world" },
-              });
-              this.allData.links.push({
-                source: sourceNodeId,
-                target: this.allData.data.length - 1,
               });
               this.refreshCharts();
             }
             this.initNodesArray();
-            this.newTargetNodeName =
-              this.nodeInfo.name + Math.floor(Math.random() * 1000);
           }
         },
         //----------------------上面为涉及allData的复杂SQL----------------------
@@ -392,6 +391,7 @@
           myChart.on("graphRoam", updatePosition);
           //点击事件添加
           myChart.on("click", (params) => {
+            console.log(params);
             if (params.dataType == "node") {
               that.onClickNodes(params.data);
             } else if (params.componentType == "graphic") {
@@ -407,8 +407,10 @@
         //----------------------Tab 1----------------------
         //输入函数名时要扩展节点的宽
         bindInputFuncName(e) {
+          console.log(e, this.nodeInfo);
           var idx = this.selectIdxByFuncName(e);
           this.nodeInfo.symbolSize[0] = 20 + e.length * 7;
+          console.log(e, this.nodeInfo, idx);
           var myChart = echarts.init(document.getElementById("main"));
           myChart.setOption({
             graphic: [
@@ -466,6 +468,7 @@
         var editor = ace.edit("editor");
         editor.setTheme("ace/theme/monokai");
         editor.session.setMode("ace/mode/c_cpp");
+        editor.session.setTabSize(2);
         editor.on("change", this.aceChanged);
       },
     });
