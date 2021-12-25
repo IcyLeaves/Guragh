@@ -158,6 +158,7 @@
         targetNodeArray: [],
         aceEditor: null,
         newTargetNodeName: "",
+        addedChartsEvents: false,
       },
       watch: {
         allData: {
@@ -256,7 +257,10 @@
                 name: this.newTargetNodeName,
                 x: sourceNode.x + Math.floor(Math.random() * 100),
                 y: sourceNode.y + Math.floor(Math.random() * 100),
-                symbolSize: sourceNode.symbolSize,
+                symbolSize: [
+                  sourceNode.symbolSize[0],
+                  sourceNode.symbolSize[1],
+                ], //这样才是值传递！直接赋值源节点的数组会造成传了个引用
                 category: 0,
                 extra: { code: "hello,world" },
               });
@@ -386,18 +390,20 @@
             ),
           });
 
-          window.addEventListener("resize", updatePosition);
-          myChart.on("dataZoom", updatePosition);
-          myChart.on("graphRoam", updatePosition);
-          //点击事件添加
-          myChart.on("click", (params) => {
-            console.log(params);
-            if (params.dataType == "node") {
-              that.onClickNodes(params.data);
-            } else if (params.componentType == "graphic") {
-              that.onClickNodes(that.allData.data[params.event.target.info]);
-            } else that.onClickEdges(params);
-          });
+          if (!this.addedChartsEvents) {
+            window.addEventListener("resize", updatePosition);
+            myChart.on("dataZoom", updatePosition);
+            myChart.on("graphRoam", updatePosition);
+            //点击事件添加
+            myChart.on("click", (params) => {
+              if (params.dataType == "node") {
+                that.onClickNodes(params.data);
+              } else if (params.componentType == "graphic") {
+                that.onClickNodes(that.allData.data[params.event.target.info]);
+              } else that.onClickEdges(params);
+            });
+            this.addedChartsEvents = true;
+          }
         },
         //节点点击事件
         onClickNodes(params) {
@@ -407,10 +413,8 @@
         //----------------------Tab 1----------------------
         //输入函数名时要扩展节点的宽
         bindInputFuncName(e) {
-          console.log(e, this.nodeInfo);
           var idx = this.selectIdxByFuncName(e);
           this.nodeInfo.symbolSize[0] = 20 + e.length * 7;
-          console.log(e, this.nodeInfo, idx);
           var myChart = echarts.init(document.getElementById("main"));
           myChart.setOption({
             graphic: [
