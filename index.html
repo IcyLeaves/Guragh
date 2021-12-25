@@ -258,7 +258,7 @@
                 x: sourceNode.x + Math.floor(Math.random() * 100),
                 y: sourceNode.y + Math.floor(Math.random() * 100),
                 symbolSize: [
-                  sourceNode.symbolSize[0],
+                  20 + this.newTargetNodeName.length * 7,
                   sourceNode.symbolSize[1],
                 ], //这样才是值传递！直接赋值源节点的数组会造成传了个引用
                 category: 0,
