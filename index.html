@@ -74,11 +74,15 @@
           <el-tab-pane label="节点" name="node"
             ><div>源节点</div>
             <el-card v-for="sNode in sourceNodeArray" :key="sNode">
-              <div>{{allData.data[sNode].name}}</div>
+              <div style="cursor: pointer" @click="navNode" :data-id="sNode">
+                {{allData.data[sNode].name}}
+              </div>
             </el-card>
             <div>目标节点</div>
             <el-card v-for="tNode in targetNodeArray" :key="tNode">
-              <div>{{allData.data[tNode].name}}</div>
+              <div style="cursor: pointer" @click="navNode" :data-id="tNode">
+                {{allData.data[tNode].name}}
+              </div>
             </el-card>
 
             <el-autocomplete
@@ -444,6 +448,11 @@
             this.sourceNodeArray = sources;
             this.targetNodeArray = targets;
           }
+        },
+        navNode(e) {
+          //跳转节点
+          var { id } = e.target.dataset;
+          this.onClickNodes(this.allData.data[id]);
         },
         //----------------------Tab 3----------------------
         initNodeCategory() {

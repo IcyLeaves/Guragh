@@ -2,8 +2,8 @@
   "data": [
     {
       "name": "ObTableScanStoreRowIterator::rescan",
-      "x": 776.4414109827362,
-      "y": 378.7614436291806,
+      "x": 9130.535124791393,
+      "y": 372.06189215098084,
       "category": 0,
       "symbolSize": [265, 40],
       "extra": {
@@ -12,8 +12,8 @@
     },
     {
       "name": "ObTableScanStoreRowIterator::open_iter",
-      "x": 369.6122136637376,
-      "y": 551.1040849171944,
+      "x": 7736.246331503206,
+      "y": 1658.4051544807153,
       "category": 0,
       "symbolSize": [286, 40],
       "extra": {
@@ -22,8 +22,8 @@
     },
     {
       "name": "ObMultipleScanMerge::open",
-      "x": 140.1545414856273,
-      "y": 400.855457124608,
+      "x": 6095.688545587258,
+      "y": 467.421577504017,
       "category": 0,
       "symbolSize": [195, 40],
       "extra": {
@@ -32,8 +32,8 @@
     },
     {
       "name": "ObOperator::get_next_row",
-      "x": -462.25416964512254,
-      "y": 173.33766731235414,
+      "x": -1470.3939891230198,
+      "y": -1667.8029221796214,
       "symbolSize": [188, 40],
       "category": 0,
       "extra": {
@@ -42,8 +42,8 @@
     },
     {
       "name": "ObNestedLoopJoinOp::inner_get_next_row",
-      "x": -295.05608741295066,
-      "y": 282.86496521159654,
+      "x": -34.95009259157678,
+      "y": -906.4801589121953,
       "symbolSize": [286, 40],
       "category": 0,
       "extra": {
@@ -52,8 +52,8 @@
     },
     {
       "name": "ObNestedLoopJoinOp::read_left_func_going",
-      "x": 10.10059375469541,
-      "y": 176.1235504837585,
+      "x": 2156.127397161732,
+      "y": -1650.1736996033246,
       "symbolSize": [300, 40],
       "category": 0,
       "extra": {
@@ -62,8 +62,8 @@
     },
     {
       "name": "ObTableScanOp::rescan",
-      "x": 137.79149002463487,
-      "y": 290.8686584516443,
+      "x": 3360.034904901693,
+      "y": -628.0001712316448,
       "symbolSize": [167, 40],
       "category": 0,
       "extra": {
@@ -72,8 +72,8 @@
     },
     {
       "name": "ObTableScanOp::rt_rescan",
-      "x": 437.6735124362814,
-      "y": 186.91516962694084,
+      "x": 5597.235191586471,
+      "y": -1665.1038096458637,
       "symbolSize": [188, 40],
       "category": 0,
       "extra": {
@@ -82,8 +82,8 @@
     },
     {
       "name": "ObTableScanOp::rescan_after_adding_query_range",
-      "x": 570.1850914245756,
-      "y": 303.970915652195,
+      "x": 6882.620132961523,
+      "y": -638.575346898371,
       "symbolSize": [342, 40],
       "category": 0,
       "extra": {
@@ -92,8 +92,8 @@
     },
     {
       "name": "ObTableScanIterIterator::rescan",
-      "x": 822.4694503845063,
-      "y": 181.61210882460202,
+      "x": 8770.099556925668,
+      "y": -2042.1516774387178,
       "symbolSize": [237, 40],
       "category": 0,
       "extra": {
@@ -102,8 +102,8 @@
     },
     {
       "name": "ObMultipleScanMerge::construct_iters",
-      "x": -113.41412144432235,
-      "y": 525.9735481039448,
+      "x": 4065.975976562677,
+      "y": 1680.0964036794576,
       "symbolSize": [272, 40],
       "category": 0,
       "extra": {
@@ -112,8 +112,8 @@
     },
     {
       "name": "ObSSTable::scan",
-      "x": -364.57065837695643,
-      "y": 410.1712841093224,
+      "x": -338.55026383943823,
+      "y": 1749.3063489489682,
       "symbolSize": [125, 40],
       "category": 0,
       "extra": {
@@ -122,8 +122,8 @@
     },
     {
       "name": "ObISSTableRowIterator::init",
-      "x": -546.0776173711042,
-      "y": 545.9611749406212,
+      "x": -472.19712553332784,
+      "y": 584.3826132975441,
       "symbolSize": [209, 40],
       "category": 0,
       "extra": {
@@ -132,12 +132,22 @@
     },
     {
       "name": "ObSSTableRowIterator::inner_open",
-      "x": -664.9890086036171,
-      "y": 389.58128642724716,
+      "x": -1613.6502828908287,
+      "y": -238.91184433253693,
       "symbolSize": [244, 40],
       "category": 0,
       "extra": {
         "code": "int ObSSTableRowIterator::inner_open(\r\n    const ObTableIterParam& iter_param, ObTableAccessContext& access_ctx, ObITable* table, const void* query_range)\r\n{\r\n  int ret = OB_SUCCESS;\r\n\r\n  if (OB_UNLIKELY(is_opened_)) {\r\n    ret = OB_INIT_TWICE;\r\n    STORAGE_LOG(WARN, \"The ObSSTableRowIterator has been opened, \", K(ret));\r\n  } else if (OB_UNLIKELY(NULL == query_range || NULL == table)) {\r\n    ret = OB_INVALID_ARGUMENT;\r\n    STORAGE_LOG(WARN, \"Invalid argument, \", K(ret), KP(query_range), KP(table));\r\n  } else if (OB_FAIL(get_handle_cnt(query_range, read_handle_cnt_, micro_handle_cnt_))) {\r\n    STORAGE_LOG(WARN, \"Fail to get handle cnt, \", K(ret), KP(query_range));\r\n  } else if (OB_UNLIKELY(read_handle_cnt_ <= 0) || OB_UNLIKELY(micro_handle_cnt_ <= 0)) {\r\n    ret = OB_ERR_UNEXPECTED;\r\n    STORAGE_LOG(WARN, \"Unexpected error, \", K(ret), K_(read_handle_cnt), K_(micro_handle_cnt));\r\n  } else if (OB_FAIL(init_handle_mgr(iter_param, access_ctx, query_range))) {\r\n    STORAGE_LOG(WARN, \"fail to init handle mgr\", K(ret), K(iter_param), K(access_ctx));\r\n  } else if (OB_FAIL(read_handles_.reserve(*access_ctx.allocator_, read_handle_cnt_))) {\r\n    STORAGE_LOG(WARN, \"failed to reserve read handles\", K(ret), K_(read_handle_cnt));\r\n  } else if (OB_FAIL(micro_handles_.reserve(*access_ctx.allocator_, micro_handle_cnt_))) {\r\n    STORAGE_LOG(WARN, \"failed to reserve micro handles\", K(ret), K_(micro_handle_cnt));\r\n  } else if (OB_FAIL(sstable_micro_infos_.reserve(*access_ctx.allocator_, micro_handle_cnt_))) {\r\n    STORAGE_LOG(WARN, \"failed to reserve sstable micro infos\", K(ret), K_(micro_handle_cnt));\r\n  } else if (OB_FAIL(sorted_sstable_micro_infos_.reserve(*access_ctx.allocator_, micro_handle_cnt_))) {\r\n    STORAGE_LOG(WARN, \"failed to reserve sorted sstable micro infos\", K(ret), K_(micro_handle_cnt));\r\n  } else {\r\n    sstable_ = static_cast<ObSSTable*>(table);\r\n    is_base_ = sstable_->is_major_sstable();\r\n    iter_param_ = &iter_param;\r\n    access_ctx_ = &access_ctx;\r\n    query_range_ = query_range;\r\n    sstable_snapshot_version_ = is_base_ ? 0 : sstable_->get_snapshot_version();\r\n    table_type_ = sstable_->get_key().table_type_;\r\n    scan_step_ = access_ctx_->query_flag_.is_reverse_scan() ? -1 : 1;\r\n    micro_info_iter_.set_reverse(access_ctx_->query_flag_.is_reverse_scan());\r\n    table_store_stat_.pkey_ = access_ctx_->pkey_;\r\n    block_cache_ = &(ObStorageCacheSuite::get_instance().get_block_cache());\r\n    if (OB_FAIL(ret)) {\r\n    } else if (OB_ISNULL(storage_file_ = sstable_->get_storage_file_handle().get_storage_file())) {\r\n      ret = OB_ERR_UNEXPECTED;\r\n      STORAGE_LOG(WARN, \"fail to get file handle\", K(ret), K(sstable_->get_storage_file_handle()));\r\n    } else if (OB_FAIL(prefetch())) {\r\n      STORAGE_LOG(WARN, \"Fail to prefetch data, \", K(ret));\r\n    } else {\r\n      is_opened_ = true;\r\n    }\r\n  }\r\n\r\n  if (OB_UNLIKELY(!is_opened_)) {\r\n    reset();\r\n  }\r\n  return ret;\r\n}"
+      }
+    },
+    {
+      "name": "ObSimpleArray::reserve",
+      "x": -665.936880089735,
+      "y": -2382.537117743797,
+      "symbolSize": [174, 40],
+      "category": 0,
+      "extra": {
+        "code": "int reserve(common::ObIAllocator &allocator, const int64_t count)\r\n{\r\n  int ret = common::OB_SUCCESS;\r\n  if (capacity_ < count) {\r\n    void* buf = nullptr;\r\n    reset();\r\n    if (OB_ISNULL(buf = allocator.alloc(sizeof(T) * count))) {\r\n      ret = common::OB_ALLOCATE_MEMORY_FAILED;\r\n      STORAGE_LOG(WARN, \"failed to allocate array\", K(ret));\r\n    } else {\r\n      array_ = new (buf) T[count];\r\n      capacity_ = count;\r\n    }\r\n  }\r\n  return ret;\r\n}"
       }
     }
   ],
@@ -154,7 +164,8 @@
     { "source": 2, "target": 10 },
     { "source": 10, "target": 11 },
     { "source": 11, "target": 12 },
-    { "source": 12, "target": 13 }
+    { "source": 12, "target": 13 },
+    { "source": 13, "target": 14 }
   ],
   "categories": [
     { "name": "蓝色", "itemStyle": { "color": "#5470C5" } },
