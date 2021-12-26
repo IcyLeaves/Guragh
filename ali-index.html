@@ -55,13 +55,13 @@
       </div>
 
       <h2>节点信息</h2>
-      <div v-show="nodeInfo.name">
+      <div v-show="nodeInfo.id">
         <el-tabs v-model="activeTab" style="margin-bottom: 200px">
           <el-tab-pane label="函数" name="func"
             ><el-form ref="nodeForm" :model="nodeInfo" label-width="80px">
               <el-form-item label="函数名称">
                 <el-input
-                  v-model="nodeInfo.name"
+                  v-model="nodeInfo.label"
                   @input="bindInputFuncName"
                   class="o-input"
                 ></el-input>
@@ -73,15 +73,15 @@
           >
           <el-tab-pane label="节点" name="node"
             ><div>源节点</div>
-            <el-card v-for="sNode in sourceNodeArray" :key="sNode">
-              <div style="cursor: pointer" @click="navNode" :data-id="sNode">
-                {{allData.data[sNode].name}}
+            <el-card v-for="sNode in sourceNodeArray" :key="sNode.id">
+              <div style="cursor: pointer" @click="navNode" :data-id="sNode.id">
+                {{sNode.label}}
               </div>
             </el-card>
             <div>目标节点</div>
-            <el-card v-for="tNode in targetNodeArray" :key="tNode">
-              <div style="cursor: pointer" @click="navNode" :data-id="tNode">
-                {{allData.data[tNode].name}}
+            <el-card v-for="tNode in targetNodeArray" :key="tNode.id">
+              <div style="cursor: pointer" @click="navNode" :data-id="tNode.id">
+                {{tNode.label}}
               </div>
             </el-card>
 
@@ -93,7 +93,7 @@
               placeholder="请输入节点名"
               :trigger-on-focus="false"
             ></el-autocomplete>
-            <el-button type="success" @click="insertNewTargetNode()"
+            <el-button type="success" @click="insertNewTargetNode"
               >添加新节点/连接已有节点</el-button
             ></el-tab-pane
           ><el-tab-pane label="样式" name="kind">
@@ -169,7 +169,7 @@
       watch: {
         allData: {
           handler: function (newValue, oldValue) {
-            // this.initCharts();
+            this.initCharts();
           },
           deep: true,
         },
@@ -178,7 +178,7 @@
             if (newValue === "node") {
               this.initNodesArray();
               this.newTargetNodeName =
-                this.nodeInfo.name + Math.floor(Math.random() * 1000);
+                this.nodeInfo.label + Math.floor(Math.random() * 1000);
             } else if (newValue == "kind") {
               this.initNodeCategory();
             }
@@ -276,7 +276,6 @@
               //打印文件内容
               this.allData = JSON.parse(reader.result);
               this.tabIndex = 0;
-              this.initCharts();
             }
           };
           reader.readAsText(file.raw);
@@ -325,20 +324,20 @@
               // 一些操作
               this.onClickNodes(evt.item._cfg.model);
             });
-            // this.g6Chart.on("node:dragend", (evt) => {
-            //   // 一些操作
-            //   // this.onClickNodes(evt.item._cfg.model);
-            //   console.log(this.allData.nodes[0].x);
-            //   // var { id, x, y } = evt.item._cfg.model;
-            //   // this.allData.nodes[Number(id)].x = x;
-            //   // this.allData.nodes[Number(id)].y = y;
-            // });
+            this.g6Chart.on("node:dragend", (evt) => {
+              // 一些操作
+              var { id, x, y } = evt.item._cfg.model;
+              this.allData.nodes[Number(id)].x = x;
+              this.allData.nodes[Number(id)].y = y;
+            });
           }
+          console.log(1);
           this.g6Chart.clear();
           // 读取数据
+          var tmpData = JSON.parse(JSON.stringify(this.allData));
           this.g6Chart.data({
-            nodes: this.allData.nodes,
-            edges: this.allData.edges,
+            nodes: tmpData.nodes,
+            edges: tmpData.edges,
           });
           // 渲染图
           this.g6Chart.render();
@@ -456,49 +455,46 @@
         //节点点击事件
         onClickNodes(params) {
           this.nodeInfo = params;
+          console.log(this.nodeInfo);
         },
-        onClickEdges(params) {},
         //----------------------Tab 1----------------------
         //输入函数名时要扩展节点的宽
         bindInputFuncName(e) {
-          var idx = this.selectIdxByFuncName(e);
-          this.nodeInfo.symbolSize[0] = 20 + e.length * 7;
-          var myChart = echarts.init(document.getElementById("main"), null, {
-            renderer: "svg",
-          });
-          myChart.setOption({
-            graphic: [
-              {
-                id: idx,
-                shape: {
-                  x: -this.nodeInfo.symbolSize[0] / 2,
-                  width: this.nodeInfo.symbolSize[0],
-                },
-              },
-            ],
-          });
+          var idx = Number(this.nodeInfo.id);
+          this.allData.nodes[idx].size[0] = 20 + e.length * 7;
         },
         aceChanged(e) {
           var editor = ace.edit("editor");
-          if (this.nodeInfo.name) {
-            this.nodeInfo.extra.code = editor.getValue();
+          if (this.nodeInfo.id) {
+            var idx = Number(this.nodeInfo.id);
+            this.allData.nodes[idx].extra.code = editor.getValue();
           }
         },
         //----------------------Tab 2----------------------
         //切换到节点标签时计算节点
         initNodesArray() {
-          if (this.nodeInfo && this.nodeInfo.name) {
-            var idx = this.selectIdxByFuncName(this.nodeInfo.name);
-            var { sources, targets } =
-              this.selectAllSourceAndTargetByNodeId(idx);
-            this.sourceNodeArray = sources;
-            this.targetNodeArray = targets;
+          if (this.nodeInfo && this.nodeInfo.id) {
+            var node = this.g6Chart.findById(this.nodeInfo.id);
+            var sources = node.getNeighbors("source");
+            var targets = node.getNeighbors("target");
+            var mapper = (n) => {
+              return {
+                id: n._cfg.model.id,
+                label: n._cfg.model.label,
+              };
+            };
+            this.sourceNodeArray = sources.map(mapper);
+            this.targetNodeArray = targets.map(mapper);
           }
         },
         navNode(e) {
           //跳转节点
           var { id } = e.target.dataset;
-          this.onClickNodes(this.allData.data[id]);
+          this.g6Chart.focusItem(id, true, {
+            easing: "easeCubic",
+            duration: 400,
+          });
+          this.onClickNodes(this.allData.data[Number(id)]);
         },
         //----------------------Tab 3----------------------
         initNodeCategory() {
