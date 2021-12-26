@@ -232,17 +232,17 @@
   ],
   "categories": [
     {
-      "id": "ObTableScanStoreRowIterator",
-      "itemStyle": { "color": "rgba(105, 166, 240, 1)" }
+      "name": "ObTableScanStoreRowIterator",
+      "fill": "rgb(105, 166, 240)"
     },
     {
-      "id": "ObISSTableRowIterator",
-      "itemStyle": { "color": "rgba(23, 197, 104, 1)" }
+      "name": "ObISSTableRowIterator",
+      "fill": "rgb(23, 197, 104)"
     },
-    { "id": "ObSSTable", "itemStyle": { "color": "rgba(240, 105, 105, 1)" } },
+    { "name": "ObSSTable", "fill": "rgb(240, 105, 105)" },
     {
-      "id": "ObMultipleScanMerge",
-      "itemStyle": { "color": "rgba(240, 217, 105, 1)" }
+      "name": "ObMultipleScanMerge",
+      "fill": "rgb(240, 217, 105)"
     }
   ]
 }

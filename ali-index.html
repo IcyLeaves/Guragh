@@ -45,7 +45,7 @@
         <div v-show="tabIndex===1">
           <el-input
             type="textarea"
-            autosize
+            :rows="2"
             placeholder="请输入内容"
             v-model="allDataStr"
             disabled
@@ -130,10 +130,7 @@
                 <el-input v-model="nodeCategory.name"></el-input>
               </el-form-item>
               <el-form-item label="节点背景色">
-                <el-color-picker
-                  show-alpha
-                  v-model="nodeCategory.itemStyle.color"
-                ></el-color-picker>
+                <el-color-picker v-model="nodeCategory.fill"></el-color-picker>
               </el-form-item> </el-form
           ></el-tab-pane>
         </el-tabs>
@@ -169,6 +166,7 @@
       watch: {
         allData: {
           handler: function (newValue, oldValue) {
+            console.log(newValue.categories[0].fill);
             this.initCharts();
           },
           deep: true,
@@ -289,7 +287,8 @@
                 type: "rect",
                 style: {
                   radius: 20,
-                  lineWidth: 0,
+                  lineWidth: 1,
+                  strokeOpacity: 0.5,
                 },
               },
               defaultEdge: {
@@ -320,20 +319,61 @@
           }
           // 读取数据
           var tmpData = JSON.parse(JSON.stringify(this.allData));
-          this.g6Chart.data({
-            nodes: tmpData.nodes,
-            edges: tmpData.edges,
+          tmpData.nodes.map((n) => {
+            var bgc = tmpData.categories[n.category].fill;
+            var getTextColor = (backgroundColor) => {
+              var rgbs = [];
+              if (backgroundColor.substring(0, 1) == "#") {
+                rgbs = [
+                  backgroundColor.substring(1, 3),
+                  backgroundColor.substring(3, 5),
+                  backgroundColor.substring(5, 7),
+                ];
+              } else {
+                rgbs = backgroundColor
+                  .substring(4, backgroundColor.length - 1)
+                  .replace(/ /g, "")
+                  .split(",");
+              }
+              var threshold = 128; //阈值
+              var r = parseInt(rgbs[0], 16) * 0.3;
+              var g = parseInt(rgbs[1], 16) * 0.59;
+              var b = parseInt(rgbs[2], 16) * 0.11;
+              var rgb = r + g + b; //先把图像灰度化
+              if (rgb > threshold) {
+                //然后按某一阀值进行二值化
+                return "#000000";
+              } else {
+                return "#FFFFFF";
+              }
+            };
+            n.style = { fill: bgc, stroke: getTextColor(bgc) };
+            n.labelCfg = {
+              style: {
+                fill: getTextColor(bgc),
+              },
+            };
+            return n;
           });
           // 渲染图
           if (init) {
-            this.g6Chart.render();
-            this.g6Chart.fitView(20);
+            this.g6Chart.data({
+              nodes: tmpData.nodes,
+              edges: tmpData.edges,
+            });
+            this.fitWindows();
           } else {
+            this.g6Chart.changeData({
+              nodes: tmpData.nodes,
+              edges: tmpData.edges,
+            });
             this.g6Chart.refresh();
+            this.g6Chart.paint();
           }
         },
         //节点点击事件
         onClickNodes(params, isFocus) {
+          console.log(params);
           var partParams = {
             id: params.id,
             label: params.label,
@@ -352,7 +392,10 @@
           }
         },
         fitWindows() {
-          if (this.g6Chart) this.g6Chart.fitView(20);
+          if (this.g6Chart) {
+            this.g6Chart.render();
+            this.g6Chart.fitView(20);
+          }
         },
         //----------------------Tab 1----------------------
         //输入函数名时要扩展节点的宽
@@ -397,21 +440,15 @@
         },
         updateNodeCategory(e) {
           var idx = Number(this.nodeInfo.id);
-          if (e >= 0) {
-            this.nodeCategory = this.allData.categories[e];
-            this.allData.nodes[idx].category = e;
-          } else {
+          if (e < 0) {
             this.allData.categories.push({
               name: "新样式" + Math.floor(Math.random() * 100),
-              itemStyle: {
-                color: "#000000",
-              },
+              fill: "#000000",
             });
-            this.nodeCategory =
-              this.allData.categories[this.allData.categories.length - 1];
-            this.allData.nodes[idx].category =
-              this.allData.categories.length - 1;
+            e = this.allData.categories.length - 1;
           }
+          this.nodeCategory = this.allData.categories[e];
+          this.allData.nodes[idx].category = e;
         },
       },
       mounted: function () {
