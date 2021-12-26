@@ -280,7 +280,6 @@
           if (init) {
             this.g6Chart = new G6.Graph({
               container: "main",
-              renderer: "svg",
               width: 1200,
               height: 400,
               modes: {
@@ -288,14 +287,18 @@
               },
               defaultNode: {
                 type: "rect",
-              },
-              defaultEdge: {
-                type: "polyline",
                 style: {
                   radius: 20,
-                  offset: 45,
-                  endArrow: true,
-                  lineWidth: 1,
+                  lineWidth: 0,
+                },
+              },
+              defaultEdge: {
+                type: "line",
+                style: {
+                  endArrow: {
+                    path: G6.Arrow.vee(10, 10, 20), // 内置箭头，参数为箭头宽度、长度、偏移量 d（默认为 0）
+                  },
+                  lineWidth: 2,
                   stroke: "#C2C8D5",
                 },
               },

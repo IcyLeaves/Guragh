@@ -3,10 +3,10 @@
     {
       "id": "0",
       "label": "ObTableScanStoreRowIterator::rescan",
-      "x": 0,
-      "y": 0,
-      "category": 0,
+      "x": 79.22905952695453,
+      "y": 80.73062892196955,
       "size": [265, 40],
+      "category": 0,
       "extra": {
         "code": "int ObTableScanStoreRowIterator::rescan(const ObRangeArray& key_ranges, const ObPosArray& range_array_pos)\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (OB_UNLIKELY(!is_inited_)) {\r\n    ret = OB_NOT_INIT;\r\n    STORAGE_LOG(WARN, \"The ObTableScanStoreRowIterator has not been inited, \", K(ret));\r\n  } else if (&scan_param_->key_ranges_ != &key_ranges || &scan_param_->range_array_pos_ != &range_array_pos) {\r\n    ret = OB_ERR_UNEXPECTED;\r\n    STORAGE_LOG(WARN, \"scan_param is not the same\", K(ret), K(scan_param_), K(key_ranges), K(range_array_pos));\r\n  } else {\r\n    STORAGE_LOG(DEBUG, \"table scan iterate rescan\", K_(is_inited), K(scan_param_));\r\n    // there's no need to reset main_table_param_ and index_table_param_\r\n    // scan_param only reset query range fields in ObTableScan::rt_rescan()\r\n    range_iter_.reuse();\r\n    main_iter_ = NULL;\r\n    reuse_row_iters();\r\n    main_table_ctx_.reuse();\r\n    index_table_ctx_.reuse();\r\n    is_iter_opened_ = false;\r\n\r\n    if (OB_FAIL(range_iter_.set_scan_param(*scan_param_))) {\r\n      STORAGE_LOG(WARN, \"set scan param to range iterator failed\", K(ret));\r\n    } else if (OB_FAIL(prepare_table_context(row_filter_))) {\r\n      STORAGE_LOG(WARN, \"fail to prepare table context\", K(ret));\r\n    } else {\r\n      if (OB_FAIL(open_iter())) {\r\n        STORAGE_LOG(WARN, \"fail to open iter\", K(ret));\r\n      } else {\r\n        is_iter_opened_ = true;\r\n      }\r\n    }\r\n  }\r\n  return ret;\r\n}\r\n"
       }
@@ -14,10 +14,10 @@
     {
       "id": "1",
       "label": "ObTableScanStoreRowIterator::open_iter",
-      "x": 10,
-      "y": 10,
-      "category": 0,
+      "x": -83.39213643374205,
+      "y": -12.383800462443588,
       "size": [286, 40],
+      "category": 0,
       "extra": {
         "code": "int ObTableScanStoreRowIterator::open_iter()\r\n{\r\n  int ret = OB_SUCCESS;\r\n  ObBatch batch;\r\n  void* buf = NULL;\r\n  if (OB_FAIL(range_iter_.get_next(batch))) {\r\n    if (OB_ITER_END != ret) {\r\n      STORAGE_LOG(WARN, \"fail to get batch range\", K(ret));\r\n    } else {\r\n      ret = OB_SUCCESS;\r\n    }\r\n  } else {\r\n    get_table_param_.partition_store_ = partition_store_;\r\n    get_table_param_.frozen_version_ = scan_param_->frozen_version_;\r\n    get_table_param_.sample_info_ = scan_param_->sample_info_;\r\n    switch (batch.type_) {\r\n      case ObBatch::T_GET: {\r\n        if (NULL == single_merge_) {\r\n          if (NULL == (buf = scan_param_->allocator_->alloc(sizeof(ObSingleMerge)))) {\r\n            ret = OB_ALLOCATE_MEMORY_FAILED;\r\n            STORAGE_LOG(WARN, \"Fail to allocate memory, \", K(ret));\r\n          } else {\r\n            single_merge_ = new (buf) ObSingleMerge();\r\n            if (OB_FAIL(init_scan_iter(scan_param_->scan_flag_.is_index_back(), *single_merge_))) {\r\n              STORAGE_LOG(WARN, \"Fail to init single merge, \", K(ret));\r\n            } else {\r\n              use_fuse_row_cache_ = !single_merge_->is_read_memtable_only();\r\n            }\r\n          }\r\n        }\r\n        if (OB_SUCC(ret)) {\r\n          main_table_ctx_.use_fuse_row_cache_ = use_fuse_row_cache_;\r\n          if (OB_FAIL(single_merge_->open(*batch.rowkey_))) {\r\n            STORAGE_LOG(WARN, \"Fail to open multiple get merge iterator, \", K(ret));\r\n          } else {\r\n            main_iter_ = single_merge_;\r\n          }\r\n        }\r\n        break;\r\n      }\r\n      case ObBatch::T_MULTI_GET: {\r\n        if (NULL == get_merge_) {\r\n          if (NULL == (buf = scan_param_->allocator_->alloc(sizeof(ObMultipleGetMerge)))) {\r\n            ret = OB_ALLOCATE_MEMORY_FAILED;\r\n            STORAGE_LOG(WARN, \"Fail to allocate memory, \", K(ret));\r\n          } else {\r\n            get_merge_ = new (buf) ObMultipleGetMerge();\r\n            if (OB_FAIL(init_scan_iter(scan_param_->scan_flag_.is_index_back(), *get_merge_))) {\r\n              STORAGE_LOG(WARN, \"Fail to init get merge, \", K(ret));\r\n            } else {\r\n              use_fuse_row_cache_ = !get_merge_->is_read_memtable_only();\r\n            }\r\n          }\r\n        }\r\n        if (OB_SUCC(ret)) {\r\n          main_table_ctx_.use_fuse_row_cache_ = use_fuse_row_cache_;\r\n          if (OB_FAIL(get_merge_->open(*batch.rowkeys_))) {\r\n            STORAGE_LOG(WARN, \"Fail to open multiple get merge iterator, \", K(ret));\r\n          } else {\r\n            main_iter_ = get_merge_;\r\n          }\r\n        }\r\n        break;\r\n      }\r\n      case ObBatch::T_SCAN: {\r\n        if (NULL == scan_merge_) {\r\n          if (OB_ISNULL(buf = scan_param_->allocator_->alloc(sizeof(ObMultipleScanMerge)))) {\r\n            ret = OB_ALLOCATE_MEMORY_FAILED;\r\n            STORAGE_LOG(WARN, \"Fail to allocate memory, \", K(ret));\r\n          } else {\r\n            scan_merge_ = new (buf) ObMultipleScanMerge();\r\n            if (OB_FAIL(init_scan_iter(scan_param_->scan_flag_.is_index_back(), *scan_merge_))) {\r\n              STORAGE_LOG(WARN, \"Fail to init scan merge, \", K(ret));\r\n            }\r\n          }\r\n        }\r\n\r\n        if (OB_SUCC(ret)) {\r\n          if (scan_param_->sample_info_.is_block_sample()) {\r\n            if (NULL == block_sample_iterator_) {\r\n              if (OB_ISNULL(buf = scan_param_->allocator_->alloc(sizeof(ObBlockSampleIterator)))) {\r\n                ret = OB_ALLOCATE_MEMORY_FAILED;\r\n                STORAGE_LOG(WARN, \"failed to allocate block_sample_iterator_\", K(ret));\r\n              } else {\r\n                block_sample_iterator_ = new (buf) ObBlockSampleIterator(scan_param_->sample_info_);\r\n              }\r\n            }\r\n            if (OB_SUCC(ret)) {\r\n              if (OB_FAIL(block_sample_iterator_->open(*scan_merge_,\r\n                      scan_param_->scan_flag_.is_index_back() ? index_table_ctx_ : main_table_ctx_,\r\n                      *batch.range_,\r\n                      get_table_param_,\r\n                      scan_param_->scan_flag_.is_reverse_scan()))) {\r\n                STORAGE_LOG(WARN, \"failed to open block_sample_iterator_\", K(ret));\r\n              } else {\r\n                main_iter_ = block_sample_iterator_;\r\n              }\r\n            }\r\n          } else {\r\n            if (OB_FAIL(scan_merge_->open(*batch.range_))) {\r\n              STORAGE_LOG(WARN, \"Fail to open multiple scan merge iterator, \", K(ret), K(*scan_param_));\r\n            } else {\r\n              main_iter_ = scan_merge_;\r\n            }\r\n          }\r\n        }\r\n        break;\r\n      }\r\n      case ObBatch::T_MULTI_SCAN: {\r\n        if (NULL == multi_scan_merge_) {\r\n          if (NULL == (buf = scan_param_->allocator_->alloc(sizeof(ObMultipleMultiScanMerge)))) {\r\n            ret = OB_ALLOCATE_MEMORY_FAILED;\r\n            STORAGE_LOG(WARN, \"Fail to allocate memory, \", K(ret));\r\n          } else {\r\n            multi_scan_merge_ = new (buf) ObMultipleMultiScanMerge();\r\n            if (OB_FAIL(init_scan_iter(scan_param_->scan_flag_.is_index_back(), *multi_scan_merge_))) {\r\n              STORAGE_LOG(WARN, \"fail to init multi scan merge\", K(ret));\r\n            }\r\n          }\r\n        }\r\n        if (OB_SUCC(ret)) {\r\n          if (OB_FAIL(multi_scan_merge_->open(*batch.ranges_))) {\r\n            STORAGE_LOG(WARN, \"Fail to open multiple multi_scan merge iterator, \", K(ret));\r\n          } else {\r\n            main_iter_ = multi_scan_merge_;\r\n          }\r\n        }\r\n        break;\r\n      }\r\n      default: {\r\n        ret = OB_INVALID_ARGUMENT;\r\n        STORAGE_LOG(WARN, \"invalid batch type\", K(ret), K(batch.type_));\r\n      }\r\n    }\r\n\r\n    if (OB_SUCC(ret)) {\r\n      if (scan_param_->sample_info_.is_row_sample()) {\r\n        if (NULL == row_sample_iterator_) {\r\n          if (OB_ISNULL(buf = scan_param_->allocator_->alloc(sizeof(ObRowSampleIterator)))) {\r\n            ret = OB_ALLOCATE_MEMORY_FAILED;\r\n            STORAGE_LOG(WARN, \"failed to allocate memory\", K(ret));\r\n          } else {\r\n            row_sample_iterator_ = new (buf) ObRowSampleIterator(scan_param_->sample_info_);\r\n          }\r\n        }\r\n        if (OB_SUCC(ret)) {\r\n          if (OB_FAIL(row_sample_iterator_->open(*main_iter_))) {\r\n            STORAGE_LOG(WARN, \"failed to open row_sample_iterator\", K(ret));\r\n          } else {\r\n            main_iter_ = row_sample_iterator_;\r\n          }\r\n        }\r\n      }\r\n    }\r\n\r\n    if (OB_SUCC(ret)) {\r\n      if (scan_param_->scan_flag_.is_index_back()) {\r\n        if (NULL == index_merge_) {\r\n          if (NULL == (buf = scan_param_->allocator_->alloc(sizeof(ObIndexMerge)))) {\r\n            ret = OB_ALLOCATE_MEMORY_FAILED;\r\n            STORAGE_LOG(WARN, \"Fail to allocate memory, \", K(ret));\r\n          } else {\r\n            index_merge_ = new (buf) ObIndexMerge();\r\n            if (OB_FAIL(index_merge_->init(main_table_param_, index_table_param_, main_table_ctx_, get_table_param_))) {\r\n              STORAGE_LOG(WARN, \"Fail to init index merge, \", K(ret));\r\n            }\r\n          }\r\n        }\r\n\r\n        if (OB_SUCC(ret)) {\r\n          main_table_ctx_.use_fuse_row_cache_ = use_fuse_row_cache_;\r\n          if (OB_FAIL(index_merge_->open(*main_iter_))) {\r\n            STORAGE_LOG(WARN, \"Fail to open index merge iterator, \", K(ret));\r\n          } else {\r\n            main_iter_ = index_merge_;\r\n          }\r\n        }\r\n      }\r\n    }\r\n  }\r\n  return ret;\r\n}"
       }
@@ -25,10 +25,10 @@
     {
       "id": "2",
       "label": "ObMultipleScanMerge::open",
-      "x": 20,
-      "y": 20,
-      "category": 3,
+      "x": -239.5245961922593,
+      "y": 81.32844247554877,
       "size": [195, 40],
+      "category": 3,
       "extra": {
         "code": "int ObMultipleScanMerge::open(const ObExtStoreRange& range)\r\n{\r\n  int ret = OB_SUCCESS;\r\n\r\n  if (OB_UNLIKELY(!range.get_range().is_valid())) {\r\n    STORAGE_LOG(WARN, \"Invalid range, \", K(range), K(ret));\r\n  } else if (OB_FAIL(ObMultipleMerge::open())) {\r\n    STORAGE_LOG(WARN, \"Fail to open ObMultipleMerge, \", K(ret));\r\n  } else if (OB_FAIL(const_cast<ObExtStoreRange&>(range).to_collation_free_range_on_demand_and_cutoff_range(\r\n                 *access_ctx_->allocator_))) {\r\n    STORAGE_LOG(WARN, \"fail to get collation free rowkey\", K(ret));\r\n  } else {\r\n    row_filter_ = NULL;\r\n\r\n    if (NULL != access_ctx_->row_filter_ && tables_handle_.has_split_source_table(access_ctx_->pkey_)) {\r\n      row_filter_ = access_ctx_->row_filter_;\r\n    }\r\n\r\n    range_ = &range;\r\n    if (OB_FAIL(ObMultipleScanMergeImpl::prepare_loser_tree())) {\r\n      STORAGE_LOG(WARN, \"fail to prepare loser tree\", K(ret));\r\n    } else if (OB_FAIL(construct_iters())) {\r\n      STORAGE_LOG(WARN, \"fail to construct iters\", K(ret));\r\n    } else if (OB_UNLIKELY(access_ctx_->need_prewarm())) {\r\n      access_ctx_->store_ctx_->warm_up_ctx_->record_scan(*access_param_, *access_ctx_, *range_);\r\n    }\r\n  }\r\n\r\n  return ret;\r\n}"
       }
@@ -36,8 +36,8 @@
     {
       "id": "3",
       "label": "ObOperator::get_next_row",
-      "x": 30,
-      "y": 30,
+      "x": -527.5001820740606,
+      "y": -219.61805969163152,
       "size": [188, 40],
       "category": 0,
       "extra": {
@@ -47,8 +47,8 @@
     {
       "id": "4",
       "label": "ObNestedLoopJoinOp::inner_get_next_row",
-      "x": 40,
-      "y": 40,
+      "x": -333.59401789362613,
+      "y": -154.15056436623075,
       "size": [286, 40],
       "category": 0,
       "extra": {
@@ -58,8 +58,8 @@
     {
       "id": "5",
       "label": "ObNestedLoopJoinOp::read_left_func_going",
-      "x": 10,
-      "y": -10,
+      "x": -151.84662692772918,
+      "y": -212.51631807562848,
       "size": [300, 40],
       "category": 0,
       "extra": {
@@ -69,8 +69,8 @@
     {
       "id": "6",
       "label": "ObTableScanOp::rescan",
-      "x": 20,
-      "y": -20,
+      "x": 136.11338977826335,
+      "y": -149.50581460638261,
       "size": [167, 40],
       "category": 0,
       "extra": {
@@ -80,8 +80,8 @@
     {
       "id": "7",
       "label": "ObTableScanOp::rt_rescan",
-      "x": 30,
-      "y": -30,
+      "x": 482.95813478849595,
+      "y": -224.08537660546244,
       "size": [188, 40],
       "category": 0,
       "extra": {
@@ -91,8 +91,8 @@
     {
       "id": "8",
       "label": "ObTableScanOp::rescan_after_adding_query_range",
-      "x": 40,
-      "y": -40,
+      "x": 398.3668777237336,
+      "y": -22.94985368740629,
       "size": [342, 40],
       "category": 0,
       "extra": {
@@ -102,8 +102,8 @@
     {
       "id": "9",
       "label": "ObTableScanIterIterator::rescan",
-      "x": -10,
-      "y": 10,
+      "x": 445.94027602310507,
+      "y": 67.1981103447258,
       "size": [237, 40],
       "category": 0,
       "extra": {
@@ -113,8 +113,8 @@
     {
       "id": "10",
       "label": "ObMultipleScanMerge::construct_iters",
-      "x": -20,
-      "y": 20,
+      "x": -532.6699838274886,
+      "y": 266.79972769957294,
       "size": [272, 40],
       "category": 3,
       "extra": {
@@ -124,8 +124,8 @@
     {
       "id": "11",
       "label": "ObSSTable::scan",
-      "x": -30,
-      "y": 30,
+      "x": -864.4133187638361,
+      "y": 377.17484466148767,
       "size": [125, 40],
       "category": 2,
       "extra": {
@@ -135,8 +135,8 @@
     {
       "id": "12",
       "label": "ObISSTableRowIterator::init",
-      "x": -40,
-      "y": 40,
+      "x": -959.3562283806857,
+      "y": 221.0580136274636,
       "size": [209, 40],
       "category": 1,
       "extra": {
@@ -146,8 +146,8 @@
     {
       "id": "13",
       "label": "ObSSTableRowIterator::inner_open",
-      "x": -10,
-      "y": -10,
+      "x": -1139.2589788863697,
+      "y": 126.74596012162681,
       "size": [244, 40],
       "category": 0,
       "extra": {
@@ -157,8 +157,8 @@
     {
       "id": "14",
       "label": "ObSimpleArray::reserve",
-      "x": -20,
-      "y": -20,
+      "x": -101.07739877967754,
+      "y": 209.700447629364,
       "size": [174, 40],
       "category": 0,
       "extra": {
@@ -168,8 +168,8 @@
     {
       "id": "15",
       "label": "ObSSTableRowIterator::prefetch",
-      "x": -30,
-      "y": -30,
+      "x": -1254.1396085523786,
+      "y": -64.46818102023755,
       "size": [230, 40],
       "category": 0,
       "extra": {
@@ -179,8 +179,8 @@
     {
       "id": "16",
       "label": "ObTableScanStoreRowIterator::reuse_row_iters",
-      "x": -40,
-      "y": -40,
+      "x": -876.301349760512,
+      "y": -113.05777486574874,
       "size": [328, 40],
       "category": 0,
       "extra": {
@@ -190,8 +190,8 @@
     {
       "id": "17",
       "label": "ObMultipleScanMerge::reuse",
-      "x": -25,
-      "y": -25,
+      "x": -770.4377127953662,
+      "y": 106.02777559303935,
       "size": [202, 40],
       "category": 0,
       "extra": {
@@ -201,8 +201,8 @@
     {
       "id": "18",
       "label": "ObSSTableRowIterator::~ObSSTableRowIterator",
-      "x": 25,
-      "y": 25,
+      "x": 147.78461349007273,
+      "y": -82.7677902574739,
       "size": [321, 40],
       "category": 0,
       "extra": {
@@ -239,10 +239,7 @@
       "id": "ObISSTableRowIterator",
       "itemStyle": { "color": "rgba(23, 197, 104, 1)" }
     },
-    {
-      "id": "ObSSTable",
-      "itemStyle": { "color": "rgba(240, 105, 105, 1)" }
-    },
+    { "id": "ObSSTable", "itemStyle": { "color": "rgba(240, 105, 105, 1)" } },
     {
       "id": "ObMultipleScanMerge",
       "itemStyle": { "color": "rgba(240, 217, 105, 1)" }
