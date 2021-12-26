@@ -143,6 +143,7 @@
   <script language="javascript" src="vue.js"></script>
   <script language="javascript" src="element.js"></script>
   <script language="javascript" src="echarts.js"></script>
+  <script language="javascript" src="g6.js"></script>
   <script
     src="ace-builds/src-noconflict/ace.js"
     type="text/javascript"
@@ -306,115 +307,147 @@
         },
         //初始化图表
         initCharts() {
-          var that = this;
-          // 基于准备好的dom，初始化echarts实例
-          var myChart = echarts.init(document.getElementById("main"), null, {
-            renderer: "svg",
-          });
-          // 指定图表的配置项和数据
-          var option = {
-            title: {
-              text: "Basic Graph",
+          // 创建 G6 图实例
+          const graph = new G6.Graph({
+            container: "main",
+            width: 1200,
+            height: 400,
+            modes: {
+              default: ["drag-canvas", "zoom-canvas", "drag-node"],
             },
-            tooltip: {},
-            series: [
+          });
+          // 读取数据
+          graph.data({
+            nodes: [
               {
-                id: "a",
-                animation: false,
-                type: "graph",
-                layout: "none",
-                symbol: "rect",
-                draggable: false,
-                edgeSymbol: ["", "arrow"],
-                roam: true,
-                label: {
-                  show: true,
-                  fontFamily: "Consolas",
-                },
-                data: that.allData.data,
-                links: that.allData.links,
-                categories: that.allData.categories,
+                id: "node1",
+                x: 100,
+                y: 200,
+              },
+              {
+                id: "node2",
+                x: 300,
+                y: 200,
               },
             ],
-          };
-
-          // 使用刚指定的配置项和数据显示图表。
-          myChart.setOption(option);
-          //配置可拖拽系统
-
-          var updatePosition = () => {
-            myChart.setOption({
-              graphic: echarts.util.map(
-                that.allData.data,
-                function (item, dataIndex) {
-                  var tmpPos = myChart.convertToPixel({ seriesIndex: 0 }, [
-                    item.x,
-                    item.y,
-                  ]);
-                  return {
-                    x: tmpPos[0],
-                    y: tmpPos[1],
-                  };
-                }
-              ),
-            });
-          };
-          var onPointDragging = function (dataIndex) {
-            //节点上图层拖拽执行的函数
-            var tmpPos = myChart.convertFromPixel(
-              { seriesIndex: 0 },
-              this.position
-            );
-            that.allData.data[dataIndex].x = tmpPos[0];
-            that.allData.data[dataIndex].y = tmpPos[1];
-            myChart.setOption(option);
-            updatePosition();
-          };
-          myChart.setOption({
-            graphic: echarts.util.map(
-              that.allData.data,
-              function (item, dataIndex) {
-                //使用图形元素组件在节点上划出一个隐形的图形覆盖住节点
-                var tmpPos = myChart.convertToPixel({ seriesIndex: 0 }, [
-                  item.x,
-                  item.y,
-                ]);
-                return {
-                  id: dataIndex,
-                  type: "rect",
-                  info: dataIndex,
-                  x: tmpPos[0],
-                  y: tmpPos[1],
-                  shape: {
-                    x: -item.symbolSize[0] / 2,
-                    y: -item.symbolSize[1] / 2,
-                    width: item.symbolSize[0],
-                    height: item.symbolSize[1],
-                  },
-                  // silent:true,
-                  invisible: true,
-                  draggable: true,
-                  ondrag: echarts.util.curry(onPointDragging, dataIndex),
-                  z: 100, //使图层在最高层
-                };
-              }
-            ),
+            edges: [
+              {
+                source: "node1",
+                target: "node2",
+              },
+            ],
           });
+          // 渲染图
+          graph.render();
+          // var that = this;
+          // // 基于准备好的dom，初始化echarts实例
+          // var myChart = echarts.init(document.getElementById("main"), null, {
+          //   renderer: "svg",
+          // });
+          // // 指定图表的配置项和数据
+          // var option = {
+          //   title: {
+          //     text: "Basic Graph",
+          //   },
+          //   tooltip: {},
+          //   series: [
+          //     {
+          //       id: "a",
+          //       animation: false,
+          //       type: "graph",
+          //       layout: "none",
+          //       symbol: "rect",
+          //       draggable: false,
+          //       edgeSymbol: ["", "arrow"],
+          //       roam: true,
+          //       label: {
+          //         show: true,
+          //         fontFamily: "Consolas",
+          //       },
+          //       data: that.allData.data,
+          //       links: that.allData.links,
+          //       categories: that.allData.categories,
+          //     },
+          //   ],
+          // };
 
-          if (!this.addedChartsEvents) {
-            window.addEventListener("resize", updatePosition);
-            myChart.on("dataZoom", updatePosition);
-            myChart.on("graphRoam", updatePosition);
-            //点击事件添加
-            myChart.on("click", (params) => {
-              if (params.dataType == "node") {
-                that.onClickNodes(params.data);
-              } else if (params.componentType == "graphic") {
-                that.onClickNodes(that.allData.data[params.event.target.info]);
-              } else that.onClickEdges(params);
-            });
-            this.addedChartsEvents = true;
-          }
+          // // 使用刚指定的配置项和数据显示图表。
+          // myChart.setOption(option);
+          // //配置可拖拽系统
+
+          // var updatePosition = () => {
+          //   myChart.setOption({
+          //     graphic: echarts.util.map(
+          //       that.allData.data,
+          //       function (item, dataIndex) {
+          //         var tmpPos = myChart.convertToPixel({ seriesIndex: 0 }, [
+          //           item.x,
+          //           item.y,
+          //         ]);
+          //         return {
+          //           x: tmpPos[0],
+          //           y: tmpPos[1],
+          //         };
+          //       }
+          //     ),
+          //   });
+          // };
+          // var onPointDragging = function (dataIndex) {
+          //   //节点上图层拖拽执行的函数
+          //   var tmpPos = myChart.convertFromPixel(
+          //     { seriesIndex: 0 },
+          //     this.position
+          //   );
+          //   that.allData.data[dataIndex].x = tmpPos[0];
+          //   that.allData.data[dataIndex].y = tmpPos[1];
+          //   myChart.setOption(option);
+          //   updatePosition();
+          // };
+          // myChart.setOption({
+          //   graphic: echarts.util.map(
+          //     that.allData.data,
+          //     function (item, dataIndex) {
+          //       //使用图形元素组件在节点上划出一个隐形的图形覆盖住节点
+          //       var tmpPos = myChart.convertToPixel({ seriesIndex: 0 }, [
+          //         item.x,
+          //         item.y,
+          //       ]);
+          //       return {
+          //         id: dataIndex,
+          //         type: "rect",
+          //         info: dataIndex,
+          //         x: tmpPos[0],
+          //         y: tmpPos[1],
+          //         shape: {
+          //           x: -item.symbolSize[0] / 2,
+          //           y: -item.symbolSize[1] / 2,
+          //           width: item.symbolSize[0],
+          //           height: item.symbolSize[1],
+          //         },
+          //         // silent:true,
+          //         invisible: true,
+          //         draggable: true,
+          //         ondrag: echarts.util.curry(onPointDragging, dataIndex),
+          //         z: 100, //使图层在最高层
+          //       };
+          //     }
+          //   ),
+          // });
+
+          // if (!this.addedChartsEvents) {
+          //   window.addEventListener("resize", updatePosition);
+          //   myChart.on("dataZoom", updatePosition);
+          //   myChart.on("graphRoam", updatePosition);
+          //   //点击事件添加
+          //   myChart.on("click", (params) => {
+          //     if (params.dataType == "node") {
+          //       that.onClickNodes(params.data);
+          //     } else if (params.componentType == "graphic") {
+          //       that.onClickNodes(that.allData.data[params.event.target.info]);
+          //     } else that.onClickEdges(params);
+          //   });
+          //   this.addedChartsEvents = true;
+          // }
         },
         //节点点击事件
         onClickNodes(params) {
