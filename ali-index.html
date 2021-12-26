@@ -232,13 +232,18 @@
                 source: sourceNodeId,
                 target: targetNodeId,
               });
+
+              this.targetNodeArray.push({
+                id: targetNodeId,
+                label: this.newTargetNodeName,
+              });
               //如果连接了一个老节点，马上换成新名字以防止再次连接
               this.newTargetNodeName =
                 this.nodeInfo.label + Math.floor(Math.random() * 1000);
             } else {
               //新节点
               this.allData.nodes.push({
-                id: `${this.allData.nodes.length - 1}`,
+                id: `${this.allData.nodes.length}`,
                 label: this.newTargetNodeName,
                 x: this.nodeInfo.x + Math.floor(Math.random() * 100),
                 y: this.nodeInfo.y + Math.floor(Math.random() * 100),
@@ -250,7 +255,6 @@
                 extra: { code: "hello,world" },
               });
             }
-            this.initNodesArray();
           }
         },
         //----------------------上面为涉及allData的复杂SQL----------------------
@@ -355,6 +359,7 @@
             };
             return n;
           });
+
           // 渲染图
           if (init) {
             this.g6Chart.data({
