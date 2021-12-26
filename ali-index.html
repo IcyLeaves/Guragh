@@ -26,7 +26,7 @@
         >
           <el-button size="small" type="primary">点击上传</el-button>
         </el-upload>
-        <el-button size="small" type="primary" @click="initCharts"
+        <el-button size="small" type="primary" @click="fitWindows"
           >适应窗口</el-button
         >
         <el-button size="small" type="warning" @click="tabIndex =0"
@@ -187,28 +187,14 @@
         nodeInfo: {
           handler: function (n, o) {
             var editor = ace.edit("editor");
-            editor.session.setValue(n.extra.code);
+            editor.session.setValue(n.extra.code.slice(0));
             this.initNodesArray();
             this.initNodeCategory();
+            this.allData.nodes[n.id] = n;
           },
         },
       },
       methods: {
-        // 根据FuncName查找data中的第一个下标
-        selectIdxByFuncName(name) {
-          return this.allData.data.findIndex((x) => x.name === name);
-        },
-        // 根据nodeid查找{[所有source],[所有target]}
-        selectAllSourceAndTargetByNodeId(nodeId) {
-          var sources = [];
-          var targets = [];
-          for (var l in this.allData.links) {
-            var tmp = this.allData.links[l];
-            if (tmp.target === nodeId) sources.push(tmp.source);
-            if (tmp.source === nodeId) targets.push(tmp.target);
-          }
-          return { sources, targets };
-        },
         createFilter(queryString) {
           return (name) => {
             return (
@@ -229,11 +215,14 @@
         },
         insertNewTargetNode() {
           if (this.newTargetNodeName) {
-            var sourceNodeId = this.selectIdxByFuncName(this.nodeInfo.name);
+            const sourceNodeId = this.nodeInfo.id;
             //先查找是否是新节点
-            var targetNodeId = this.selectIdxByFuncName(this.newTargetNodeName);
-            if (targetNodeId >= 0) {
+            const targetNode = this.g6Chart.find("node", (node) => {
+              return node.get("model").label === this.newTargetNodeName;
+            });
+            if (targetNode) {
               //push前确保是新的连接
+              var targetNodeId = targetNode.get("model").id;
               var i;
               for (i = 0; i < this.targetNodeArray.length; i++) {
                 if (targetNodeId == this.targetNodeArray[i]) {
@@ -241,28 +230,27 @@
                   return;
                 }
               }
-              this.allData.links.push({
+              this.allData.edges.push({
                 source: sourceNodeId,
                 target: targetNodeId,
               });
               //如果连接了一个老节点，马上换成新名字以防止再次连接
               this.newTargetNodeName =
-                this.nodeInfo.name + Math.floor(Math.random() * 1000);
+                this.nodeInfo.label + Math.floor(Math.random() * 1000);
             } else {
               //新节点
-              var sourceNode = this.allData.data[sourceNodeId];
-              this.allData.data.push({
-                name: this.newTargetNodeName,
-                x: sourceNode.x + Math.floor(Math.random() * 100),
-                y: sourceNode.y + Math.floor(Math.random() * 100),
+              this.allData.nodes.push({
+                id: `${this.allData.nodes.length - 1}`,
+                label: this.newTargetNodeName,
+                x: this.nodeInfo.x + Math.floor(Math.random() * 100),
+                y: this.nodeInfo.y + Math.floor(Math.random() * 100),
                 symbolSize: [
                   20 + this.newTargetNodeName.length * 7,
-                  sourceNode.symbolSize[1],
+                  this.nodeInfo.size[1],
                 ], //这样才是值传递！直接赋值源节点的数组会造成传了个引用
                 category: 0,
                 extra: { code: "hello,world" },
               });
-              this.initCharts();
             }
             this.initNodesArray();
           }
@@ -285,22 +273,14 @@
           this.allDataStr = JSON.stringify(this.allData);
           this.tabIndex = 1;
         },
-        //重新init一下图表
-        // refreshCharts() {
-        //   // var myChart = echarts.init(document.getElementById("main"), null, {
-        //   //   renderer: "svg",
-        //   // });
-        //   // myChart.clear();
-        //   // myChart.resize();
-        //   if (this.g6Chart) this.g6Chart.clear();
-        //   this.initCharts();
-        // },
         //初始化图表
         initCharts() {
           // 创建 G6 图实例
-          if (!this.g6Chart) {
+          var init = this.g6Chart ? false : true;
+          if (init) {
             this.g6Chart = new G6.Graph({
               container: "main",
+              renderer: "svg",
               width: 1200,
               height: 400,
               modes: {
@@ -320,9 +300,13 @@
                 },
               },
             });
-            this.g6Chart.on("node:mousedown", (evt) => {
+            this.g6Chart.on("node:click", (evt) => {
               // 一些操作
-              this.onClickNodes(evt.item._cfg.model);
+              this.onClickNodes(evt.item._cfg.model, true);
+            });
+            this.g6Chart.on("node:dragstart", (evt) => {
+              // 一些操作
+              this.onClickNodes(evt.item._cfg.model, false);
             });
             this.g6Chart.on("node:dragend", (evt) => {
               // 一些操作
@@ -331,8 +315,6 @@
               this.allData.nodes[Number(id)].y = y;
             });
           }
-          console.log(1);
-          this.g6Chart.clear();
           // 读取数据
           var tmpData = JSON.parse(JSON.stringify(this.allData));
           this.g6Chart.data({
@@ -340,122 +322,34 @@
             edges: tmpData.edges,
           });
           // 渲染图
-          this.g6Chart.render();
-          this.g6Chart.fitView(20);
-          // var that = this;
-          // // 基于准备好的dom，初始化echarts实例
-          // var myChart = echarts.init(document.getElementById("main"), null, {
-          //   renderer: "svg",
-          // });
-          // // 指定图表的配置项和数据
-          // var option = {
-          //   title: {
-          //     text: "Basic Graph",
-          //   },
-          //   tooltip: {},
-          //   series: [
-          //     {
-          //       id: "a",
-          //       animation: false,
-          //       type: "graph",
-          //       layout: "none",
-          //       symbol: "rect",
-          //       draggable: false,
-          //       edgeSymbol: ["", "arrow"],
-          //       roam: true,
-          //       label: {
-          //         show: true,
-          //         fontFamily: "Consolas",
-          //       },
-          //       data: that.allData.data,
-          //       links: that.allData.links,
-          //       categories: that.allData.categories,
-          //     },
-          //   ],
-          // };
-
-          // // 使用刚指定的配置项和数据显示图表。
-          // myChart.setOption(option);
-          // //配置可拖拽系统
-
-          // var updatePosition = () => {
-          //   myChart.setOption({
-          //     graphic: echarts.util.map(
-          //       that.allData.data,
-          //       function (item, dataIndex) {
-          //         var tmpPos = myChart.convertToPixel({ seriesIndex: 0 }, [
-          //           item.x,
-          //           item.y,
-          //         ]);
-          //         return {
-          //           x: tmpPos[0],
-          //           y: tmpPos[1],
-          //         };
-          //       }
-          //     ),
-          //   });
-          // };
-          // var onPointDragging = function (dataIndex) {
-          //   //节点上图层拖拽执行的函数
-          //   var tmpPos = myChart.convertFromPixel(
-          //     { seriesIndex: 0 },
-          //     this.position
-          //   );
-          //   that.allData.data[dataIndex].x = tmpPos[0];
-          //   that.allData.data[dataIndex].y = tmpPos[1];
-          //   myChart.setOption(option);
-          //   updatePosition();
-          // };
-          // myChart.setOption({
-          //   graphic: echarts.util.map(
-          //     that.allData.data,
-          //     function (item, dataIndex) {
-          //       //使用图形元素组件在节点上划出一个隐形的图形覆盖住节点
-          //       var tmpPos = myChart.convertToPixel({ seriesIndex: 0 }, [
-          //         item.x,
-          //         item.y,
-          //       ]);
-          //       return {
-          //         id: dataIndex,
-          //         type: "rect",
-          //         info: dataIndex,
-          //         x: tmpPos[0],
-          //         y: tmpPos[1],
-          //         shape: {
-          //           x: -item.symbolSize[0] / 2,
-          //           y: -item.symbolSize[1] / 2,
-          //           width: item.symbolSize[0],
-          //           height: item.symbolSize[1],
-          //         },
-          //         // silent:true,
-          //         invisible: true,
-          //         draggable: true,
-          //         ondrag: echarts.util.curry(onPointDragging, dataIndex),
-          //         z: 100, //使图层在最高层
-          //       };
-          //     }
-          //   ),
-          // });
-
-          // if (!this.addedChartsEvents) {
-          //   window.addEventListener("resize", updatePosition);
-          //   myChart.on("dataZoom", updatePosition);
-          //   myChart.on("graphRoam", updatePosition);
-          //   //点击事件添加
-          //   myChart.on("click", (params) => {
-          //     if (params.dataType == "node") {
-          //       that.onClickNodes(params.data);
-          //     } else if (params.componentType == "graphic") {
-          //       that.onClickNodes(that.allData.data[params.event.target.info]);
-          //     } else that.onClickEdges(params);
-          //   });
-          //   this.addedChartsEvents = true;
-          // }
+          if (init) {
+            this.g6Chart.render();
+            this.g6Chart.fitView(20);
+          } else {
+            this.g6Chart.refresh();
+          }
         },
         //节点点击事件
-        onClickNodes(params) {
-          this.nodeInfo = params;
-          console.log(this.nodeInfo);
+        onClickNodes(params, isFocus) {
+          var partParams = {
+            id: params.id,
+            label: params.label,
+            x: params.x,
+            y: params.y,
+            size: params.size,
+            category: params.category,
+            extra: params.extra,
+          };
+          this.nodeInfo = JSON.parse(JSON.stringify(partParams));
+          if (isFocus) {
+            this.g6Chart.focusItem(params.id, true, {
+              easing: "easeCubic",
+              duration: 400,
+            });
+          }
+        },
+        fitWindows() {
+          if (this.g6Chart) this.g6Chart.fitView(20);
         },
         //----------------------Tab 1----------------------
         //输入函数名时要扩展节点的宽
@@ -467,7 +361,7 @@
           var editor = ace.edit("editor");
           if (this.nodeInfo.id) {
             var idx = Number(this.nodeInfo.id);
-            this.allData.nodes[idx].extra.code = editor.getValue();
+            this.allData.nodes[idx].extra.code = editor.getValue().slice(0);
           }
         },
         //----------------------Tab 2----------------------
@@ -490,22 +384,19 @@
         navNode(e) {
           //跳转节点
           var { id } = e.target.dataset;
-          this.g6Chart.focusItem(id, true, {
-            easing: "easeCubic",
-            duration: 400,
-          });
-          this.onClickNodes(this.allData.data[Number(id)]);
+          this.onClickNodes(this.allData.nodes[Number(id)], true);
         },
         //----------------------Tab 3----------------------
         initNodeCategory() {
-          if (this.nodeInfo && this.nodeInfo.name) {
+          if (this.nodeInfo && this.nodeInfo.id) {
             this.nodeCategory = this.allData.categories[this.nodeInfo.category];
           }
         },
         updateNodeCategory(e) {
+          var idx = Number(this.nodeInfo.id);
           if (e >= 0) {
             this.nodeCategory = this.allData.categories[e];
-            this.nodeInfo.category = e;
+            this.allData.nodes[idx].category = e;
           } else {
             this.allData.categories.push({
               name: "新样式" + Math.floor(Math.random() * 100),
@@ -515,7 +406,8 @@
             });
             this.nodeCategory =
               this.allData.categories[this.allData.categories.length - 1];
-            this.nodeInfo.category = this.allData.categories.length - 1;
+            this.allData.nodes[idx].category =
+              this.allData.categories.length - 1;
           }
         },
       },
