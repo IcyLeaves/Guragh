@@ -11,7 +11,7 @@
       }
     },
     {
-      "name": "ObTableScanStoreRowIterator::open_iter",
+      "id": "ObTableScanStoreRowIterator::open_iter",
       "x": 10614.763474958985,
       "y": 1780.031402156701,
       "category": 0,
@@ -21,7 +21,7 @@
       }
     },
     {
-      "name": "ObMultipleScanMerge::open",
+      "id": "ObMultipleScanMerge::open",
       "x": 3623.231715973574,
       "y": 520.0777675847276,
       "category": 3,
@@ -31,7 +31,7 @@
       }
     },
     {
-      "name": "ObOperator::get_next_row",
+      "id": "ObOperator::get_next_row",
       "x": -1776.2984348576247,
       "y": -3649.8991141515107,
       "symbolSize": [188, 40],
@@ -41,7 +41,7 @@
       }
     },
     {
-      "name": "ObNestedLoopJoinOp::inner_get_next_row",
+      "id": "ObNestedLoopJoinOp::inner_get_next_row",
       "x": 4530.294232209681,
       "y": -4726.282177463826,
       "symbolSize": [286, 40],
@@ -51,7 +51,7 @@
       }
     },
     {
-      "name": "ObNestedLoopJoinOp::read_left_func_going",
+      "id": "ObNestedLoopJoinOp::read_left_func_going",
       "x": 13198.37795707272,
       "y": -2986.8760255886723,
       "symbolSize": [300, 40],
@@ -61,7 +61,7 @@
       }
     },
     {
-      "name": "ObTableScanOp::rescan",
+      "id": "ObTableScanOp::rescan",
       "x": 5664.485096433127,
       "y": -748.3126994948575,
       "symbolSize": [167, 40],
@@ -71,7 +71,7 @@
       }
     },
     {
-      "name": "ObTableScanOp::rt_rescan",
+      "id": "ObTableScanOp::rt_rescan",
       "x": 5597.235191586471,
       "y": -1665.1038096458637,
       "symbolSize": [188, 40],
@@ -81,7 +81,7 @@
       }
     },
     {
-      "name": "ObTableScanOp::rescan_after_adding_query_range",
+      "id": "ObTableScanOp::rescan_after_adding_query_range",
       "x": 5531.989308773245,
       "y": -2717.757222925017,
       "symbolSize": [342, 40],
@@ -91,7 +91,7 @@
       }
     },
     {
-      "name": "ObTableScanIterIterator::rescan",
+      "id": "ObTableScanIterIterator::rescan",
       "x": 8770.099556925668,
       "y": -2042.1516774387178,
       "symbolSize": [237, 40],
@@ -101,7 +101,7 @@
       }
     },
     {
-      "name": "ObMultipleScanMerge::construct_iters",
+      "id": "ObMultipleScanMerge::construct_iters",
       "x": 3785.3607962837996,
       "y": 1737.7260090399868,
       "symbolSize": [272, 40],
@@ -111,7 +111,7 @@
       }
     },
     {
-      "name": "ObSSTable::scan",
+      "id": "ObSSTable::scan",
       "x": -1081.828307391761,
       "y": 1492.5359768279582,
       "symbolSize": [125, 40],
@@ -121,7 +121,7 @@
       }
     },
     {
-      "name": "ObISSTableRowIterator::init",
+      "id": "ObISSTableRowIterator::init",
       "x": -5556.691164739967,
       "y": 1428.9357768819295,
       "symbolSize": [209, 40],
@@ -131,7 +131,7 @@
       }
     },
     {
-      "name": "ObSSTableRowIterator::inner_open",
+      "id": "ObSSTableRowIterator::inner_open",
       "x": -5440.331702452139,
       "y": -1172.8922635749568,
       "symbolSize": [244, 40],
@@ -141,7 +141,7 @@
       }
     },
     {
-      "name": "ObSimpleArray::reserve",
+      "id": "ObSimpleArray::reserve",
       "x": -6174.9591870641525,
       "y": -3260.2288825183628,
       "symbolSize": [174, 40],
@@ -151,7 +151,7 @@
       }
     },
     {
-      "name": "ObSSTableRowIterator::prefetch",
+      "id": "ObSSTableRowIterator::prefetch",
       "x": -5615.515966209938,
       "y": 104.62963095789519,
       "symbolSize": [230, 40],
@@ -161,7 +161,7 @@
       }
     },
     {
-      "name": "ObTableScanStoreRowIterator::reuse_row_iters",
+      "id": "ObTableScanStoreRowIterator::reuse_row_iters",
       "x": 12334.839615462028,
       "y": -4735.844385063411,
       "symbolSize": [328, 40],
@@ -171,7 +171,7 @@
       }
     },
     {
-      "name": "ObMultipleScanMerge::reuse",
+      "id": "ObMultipleScanMerge::reuse",
       "x": 15837.411734791334,
       "y": -3.163070411514127,
       "symbolSize": [202, 40],
@@ -181,7 +181,7 @@
       }
     },
     {
-      "name": "ObSSTableRowIterator::~ObSSTableRowIterator",
+      "id": "ObSSTableRowIterator::~ObSSTableRowIterator",
       "x": 14680.856108798273,
       "y": -1317.613248751858,
       "symbolSize": [321, 40],
@@ -213,16 +213,16 @@
   ],
   "categories": [
     {
-      "name": "ObTableScanStoreRowIterator",
+      "id": "ObTableScanStoreRowIterator",
       "itemStyle": { "color": "rgba(105, 166, 240, 1)" }
     },
     {
-      "name": "ObISSTableRowIterator",
+      "id": "ObISSTableRowIterator",
       "itemStyle": { "color": "rgba(23, 197, 104, 1)" }
     },
-    { "name": "ObSSTable", "itemStyle": { "color": "rgba(240, 105, 105, 1)" } },
+    { "id": "ObSSTable", "itemStyle": { "color": "rgba(240, 105, 105, 1)" } },
     {
-      "name": "ObMultipleScanMerge",
+      "id": "ObMultipleScanMerge",
       "itemStyle": { "color": "rgba(240, 217, 105, 1)" }
     }
   ]

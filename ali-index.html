@@ -153,6 +153,7 @@
     var Default = new Vue({
       el: "#app",
       data: {
+        g6Chart: null,
         tabIndex: 0,
         allDataStr: "{}",
         allData: {},
@@ -298,26 +299,30 @@
         },
         //重新init一下图表
         refreshCharts() {
-          var myChart = echarts.init(document.getElementById("main"), null, {
-            renderer: "svg",
-          });
-          myChart.clear();
-          myChart.resize();
+          // var myChart = echarts.init(document.getElementById("main"), null, {
+          //   renderer: "svg",
+          // });
+          // myChart.clear();
+          // myChart.resize();
+          if (this.g6Chart) this.g6Chart.clear();
           this.initCharts();
         },
         //初始化图表
         initCharts() {
           // 创建 G6 图实例
-          const graph = new G6.Graph({
-            container: "main",
-            width: 1200,
-            height: 400,
-            modes: {
-              default: ["drag-canvas", "zoom-canvas", "drag-node"],
-            },
-          });
+          if (!this.g6Chart) {
+            this.g6Chart = new G6.Graph({
+              container: "main",
+              width: 1200,
+              height: 400,
+              modes: {
+                default: ["drag-canvas", "zoom-canvas", "drag-node"],
+              },
+            });
+          }
+
           // 读取数据
-          graph.data({
+          this.g6Chart.data({
             nodes: [
               {
                 id: "node1",
@@ -338,7 +343,7 @@
             ],
           });
           // 渲染图
-          graph.render();
+          this.g6Chart.render();
           // var that = this;
           // // 基于准备好的dom，初始化echarts实例
           // var myChart = echarts.init(document.getElementById("main"), null, {
