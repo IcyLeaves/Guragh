@@ -26,7 +26,7 @@
         >
           <el-button size="small" type="primary">点击上传</el-button>
         </el-upload>
-        <el-button size="small" type="primary" @click="refreshCharts"
+        <el-button size="small" type="primary" @click="initCharts"
           >适应窗口</el-button
         >
         <el-button size="small" type="warning" @click="tabIndex =0"
@@ -169,18 +169,7 @@
       watch: {
         allData: {
           handler: function (newValue, oldValue) {
-            var myChart = echarts.init(document.getElementById("main"), null, {
-              renderer: "svg",
-            });
-            myChart.setOption({
-              series: [
-                {
-                  data: newValue.data,
-                  links: newValue.links,
-                  categories: newValue.categories,
-                },
-              ],
-            });
+            // this.initCharts();
           },
           deep: true,
         },
@@ -273,7 +262,7 @@
                 category: 0,
                 extra: { code: "hello,world" },
               });
-              this.refreshCharts();
+              this.initCharts();
             }
             this.initNodesArray();
           }
@@ -287,7 +276,7 @@
               //打印文件内容
               this.allData = JSON.parse(reader.result);
               this.tabIndex = 0;
-              this.refreshCharts();
+              this.initCharts();
             }
           };
           reader.readAsText(file.raw);
@@ -298,15 +287,15 @@
           this.tabIndex = 1;
         },
         //重新init一下图表
-        refreshCharts() {
-          // var myChart = echarts.init(document.getElementById("main"), null, {
-          //   renderer: "svg",
-          // });
-          // myChart.clear();
-          // myChart.resize();
-          if (this.g6Chart) this.g6Chart.clear();
-          this.initCharts();
-        },
+        // refreshCharts() {
+        //   // var myChart = echarts.init(document.getElementById("main"), null, {
+        //   //   renderer: "svg",
+        //   // });
+        //   // myChart.clear();
+        //   // myChart.resize();
+        //   if (this.g6Chart) this.g6Chart.clear();
+        //   this.initCharts();
+        // },
         //初始化图表
         initCharts() {
           // 创建 G6 图实例
@@ -318,32 +307,42 @@
               modes: {
                 default: ["drag-canvas", "zoom-canvas", "drag-node"],
               },
+              defaultNode: {
+                type: "rect",
+              },
+              defaultEdge: {
+                type: "polyline",
+                style: {
+                  radius: 20,
+                  offset: 45,
+                  endArrow: true,
+                  lineWidth: 1,
+                  stroke: "#C2C8D5",
+                },
+              },
             });
+            this.g6Chart.on("node:mousedown", (evt) => {
+              // 一些操作
+              this.onClickNodes(evt.item._cfg.model);
+            });
+            // this.g6Chart.on("node:dragend", (evt) => {
+            //   // 一些操作
+            //   // this.onClickNodes(evt.item._cfg.model);
+            //   console.log(this.allData.nodes[0].x);
+            //   // var { id, x, y } = evt.item._cfg.model;
+            //   // this.allData.nodes[Number(id)].x = x;
+            //   // this.allData.nodes[Number(id)].y = y;
+            // });
           }
-
+          this.g6Chart.clear();
           // 读取数据
           this.g6Chart.data({
-            nodes: [
-              {
-                id: "node1",
-                x: 100,
-                y: 200,
-              },
-              {
-                id: "node2",
-                x: 300,
-                y: 200,
-              },
-            ],
-            edges: [
-              {
-                source: "node1",
-                target: "node2",
-              },
-            ],
+            nodes: this.allData.nodes,
+            edges: this.allData.edges,
           });
           // 渲染图
           this.g6Chart.render();
+          this.g6Chart.fitView(20);
           // var that = this;
           // // 基于准备好的dom，初始化echarts实例
           // var myChart = echarts.init(document.getElementById("main"), null, {
