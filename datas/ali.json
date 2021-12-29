@@ -41,7 +41,7 @@
       "size": [188, 40],
       "category": 4,
       "extra": {
-        "code": "int ObOperator::get_next_row()\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (OB_UNLIKELY(!startup_passed_)) {\r\n    bool filtered = false;\r\n    if (OB_FAIL(startup_filter(filtered))) {\r\n      LOG_WARN(\"do startup filter failed\", K(ret), \"op\", op_name());\r\n    } else {\r\n      if (filtered) {\r\n        ret = OB_ITER_END;\r\n      } else {\r\n        startup_passed_ = true;\r\n      }\r\n    }\r\n  }\r\n\r\n  while (OB_SUCC(ret)) {\r\n    if (OB_FAIL(inner_get_next_row())) {\r\n      if (OB_ITER_END != ret) {\r\n        LOG_WARN(\"inner get next row failed\", K(ret), \"type\", spec_.type_, \"op\", op_name());\r\n      }\r\n    } else {\r\n      if (!spec_.filters_.empty()) {\r\n        bool filtered = false;\r\n        if (OB_FAIL(filter_row(filtered))) {\r\n          LOG_WARN(\"filter row failed\", K(ret), \"type\", spec_.type_, \"op\", op_name());\r\n        } else {\r\n          if (filtered) {\r\n            continue;\r\n          }\r\n        }\r\n      }\r\n    }\r\n    break;\r\n  }\r\n\r\n  if (OB_SUCCESS == ret) {\r\n    op_monitor_info_.output_row_count_++;\r\n    if (!got_first_row_) {\r\n      op_monitor_info_.first_row_time_ = oceanbase::common::ObClockGenerator::getClock();\r\n      ;\r\n      got_first_row_ = true;\r\n    }\r\n  } else if (OB_ITER_END == ret) {\r\n    int tmp_ret = drain_exch();\r\n    if (OB_SUCCESS != tmp_ret) {\r\n      LOG_WARN(\"drain exchange data failed\", K(tmp_ret));\r\n    }\r\n    if (got_first_row_) {\r\n      op_monitor_info_.last_row_time_ = oceanbase::common::ObClockGenerator::getClock();\r\n    }\r\n  }\r\n  return ret;\r\n}"
+        "code": "//这是一个值得信赖的入口函数，因为内部SQL不会路过这里，只有真正在执行的SQL会停到OB_FAIL(inner_get_next_row())\r\nint ObOperator::get_next_row()\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (OB_UNLIKELY(!startup_passed_)) {\r\n    bool filtered = false;\r\n    if (OB_FAIL(startup_filter(filtered))) {\r\n      LOG_WARN(\"do startup filter failed\", K(ret), \"op\", op_name());\r\n    } else {\r\n      if (filtered) {\r\n        ret = OB_ITER_END;\r\n      } else {\r\n        startup_passed_ = true;\r\n      }\r\n    }\r\n  }\r\n\r\n  while (OB_SUCC(ret)) {\r\n    if (OB_FAIL(inner_get_next_row())) {///此行打断点\r\n      if (OB_ITER_END != ret) {\r\n        LOG_WARN(\"inner get next row failed\", K(ret), \"type\", spec_.type_, \"op\", op_name());\r\n      }\r\n    } else {\r\n      if (!spec_.filters_.empty()) {\r\n        bool filtered = false;\r\n        if (OB_FAIL(filter_row(filtered))) {\r\n          LOG_WARN(\"filter row failed\", K(ret), \"type\", spec_.type_, \"op\", op_name());\r\n        } else {\r\n          if (filtered) {\r\n            continue;\r\n          }\r\n        }\r\n      }\r\n    }\r\n    break;\r\n  }\r\n\r\n  if (OB_SUCCESS == ret) {\r\n    op_monitor_info_.output_row_count_++;\r\n    if (!got_first_row_) {\r\n      op_monitor_info_.first_row_time_ = oceanbase::common::ObClockGenerator::getClock();\r\n      ;\r\n      got_first_row_ = true;\r\n    }\r\n  } else if (OB_ITER_END == ret) {\r\n    int tmp_ret = drain_exch();\r\n    if (OB_SUCCESS != tmp_ret) {\r\n      LOG_WARN(\"drain exchange data failed\", K(tmp_ret));\r\n    }\r\n    if (got_first_row_) {\r\n      op_monitor_info_.last_row_time_ = oceanbase::common::ObClockGenerator::getClock();\r\n    }\r\n  }\r\n  return ret;\r\n}"
       }
     },
     {
@@ -52,14 +52,14 @@
       "size": [286, 40],
       "category": 5,
       "extra": {
-        "code": "int ObNestedLoopJoinOp::inner_get_next_row()\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (OB_UNLIKELY(LEFT_SEMI_JOIN == MY_SPEC.join_type_ || LEFT_ANTI_JOIN == MY_SPEC.join_type_)) {\r\n    if (OB_FAIL(join_row_with_semi_join())) {\r\n      if (ret != OB_ITER_END) {\r\n        LOG_WARN(\"failed to join row with semi join\", K(ret));\r\n      }\r\n    }\r\n  } else {\r\n    state_operation_func_type state_operation = NULL;\r\n    state_function_func_type state_function = NULL;\r\n    int func = -1;\r\n    output_row_produced_ = false;\r\n    while (OB_SUCC(ret) && !output_row_produced_) {\r\n      state_operation = this->ObNestedLoopJoinOp::state_operation_func_[state_];\r\n      if (OB_ITER_END == (ret = (this->*state_operation)())) {\r\n        func = FT_ITER_END;\r\n        ret = OB_SUCCESS;\r\n      } else if (OB_FAIL(ret)) {\r\n        LOG_WARN(\"failed state operation\", K(ret), K(state_));\r\n      } else {\r\n        func = FT_ITER_GOING;\r\n      }\r\n      if (OB_SUCC(ret)) {\r\n        state_function = this->ObNestedLoopJoinOp::state_function_func_[state_][func];\r\n        if (OB_FAIL((this->*state_function)()) && OB_ITER_END != ret) {\r\n          LOG_WARN(\"failed state function\", K(ret), K(state_), K(func));\r\n        }\r\n      }\r\n    }  // while end\r\n  }\r\n  if (OB_ITER_END == ret) {\r\n    if (OB_FAIL(set_param_null())) {\r\n      LOG_WARN(\"failed to set param null\", K(ret));\r\n    } else {\r\n      ret = OB_ITER_END;\r\n    }\r\n  }\r\n\r\n  return ret;\r\n}"
+        "code": "int ObNestedLoopJoinOp::inner_get_next_row()\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (OB_UNLIKELY(LEFT_SEMI_JOIN == MY_SPEC.join_type_ || LEFT_ANTI_JOIN == MY_SPEC.join_type_)) {\r\n    if (OB_FAIL(join_row_with_semi_join())) {\r\n      if (ret != OB_ITER_END) {\r\n        LOG_WARN(\"failed to join row with semi join\", K(ret));\r\n      }\r\n    }\r\n  } else {\r\n    state_operation_func_type state_operation = NULL;\r\n    state_function_func_type state_function = NULL;\r\n    int func = -1;\r\n    output_row_produced_ = false;//已经有结果了吗：没有。\r\n    while (OB_SUCC(ret) && !output_row_produced_) {\r\n      //1.state_=JS_READ_LEFT \r\n      //  state_operation=ObNestedLoopJoinOp::read_left_operate() 先读取左表\r\n      state_operation = this->ObNestedLoopJoinOp::state_operation_func_[state_];\r\n      if (OB_ITER_END == (ret = (this->*state_operation)())) {\r\n        func = FT_ITER_END;\r\n        ret = OB_SUCCESS;\r\n      } else if (OB_FAIL(ret)) {\r\n        LOG_WARN(\"failed state operation\", K(ret), K(state_));\r\n      } else {\r\n        func = FT_ITER_GOING;\r\n      }\r\n      if (OB_SUCC(ret)) {\r\n        state_function = this->ObNestedLoopJoinOp::state_function_func_[state_][func];\r\n        if (OB_FAIL((this->*state_function)()) && OB_ITER_END != ret) {\r\n          LOG_WARN(\"failed state function\", K(ret), K(state_), K(func));\r\n        }\r\n      }\r\n    }  // while end\r\n  }\r\n  if (OB_ITER_END == ret) {\r\n    if (OB_FAIL(set_param_null())) {\r\n      LOG_WARN(\"failed to set param null\", K(ret));\r\n    } else {\r\n      ret = OB_ITER_END;\r\n    }\r\n  }\r\n\r\n  return ret;\r\n}"
       }
     },
     {
       "id": "5",
       "label": "ObNestedLoopJoinOp::read_left_func_going",
-      "x": -366.05165027412886,
-      "y": -124.72737408120238,
+      "x": -369.63940036098006,
+      "y": -133.09879095052176,
       "size": [300, 40],
       "category": 5,
       "extra": {
@@ -179,8 +179,8 @@
     {
       "id": "16",
       "label": "ObTableScanStoreRowIterator::reuse_row_iters",
-      "x": -237.19783748109,
-      "y": -1.858445806142356,
+      "x": -251.32137447298834,
+      "y": -1.073804862148009,
       "size": [328, 40],
       "category": 0,
       "extra": {

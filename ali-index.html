@@ -12,6 +12,18 @@
         cursor: pointer;
         color: #409eff;
       }
+      .o-node-card {
+        cursor: pointer;
+        display: flex;
+      }
+      .o-node-icon {
+        margin-left: auto;
+        min-width: 22px;
+        width: 22px;
+        min-height: 22px;
+        max-height: 22px;
+        padding: 4px !important;
+      }
     </style>
   </head>
 
@@ -74,14 +86,36 @@
           <el-tab-pane label="节点" name="node"
             ><div>源节点</div>
             <el-card v-for="sNode in sourceNodeArray" :key="sNode.id">
-              <div style="cursor: pointer" @click="navNode" :data-id="sNode.id">
-                {{sNode.label}}
+              <div class="o-node-card" @click="navNode" :data-id="sNode.id">
+                {{sNode.label}}<el-button
+                  type="danger"
+                  circle
+                  class="o-node-icon"
+                  :data-source="sNode.id"
+                  :data-target="nodeInfo.id"
+                  ><i
+                    :data-source="sNode.id"
+                    :data-target="nodeInfo.id"
+                    class="el-icon-delete"
+                  ></i
+                ></el-button>
               </div>
             </el-card>
             <div>目标节点</div>
             <el-card v-for="tNode in targetNodeArray" :key="tNode.id">
-              <div style="cursor: pointer" @click="navNode" :data-id="tNode.id">
-                {{tNode.label}}
+              <div class="o-node-card" @click="navNode" :data-id="tNode.id">
+                {{tNode.label}}<el-button
+                  type="danger"
+                  circle
+                  class="o-node-icon"
+                  :data-source="nodeInfo.id"
+                  :data-target="tNode.id"
+                  ><i
+                    :data-source="nodeInfo.id"
+                    :data-target="tNode.id"
+                    class="el-icon-delete"
+                  ></i
+                ></el-button>
               </div>
             </el-card>
 
@@ -166,8 +200,8 @@
       watch: {
         allData: {
           handler: function (newValue, oldValue) {
-            console.log(newValue.categories[0].fill);
             this.initCharts();
+            this.initNodesArray();
           },
           deep: true,
         },
@@ -201,8 +235,8 @@
           };
         },
         querySearchFuncName(queryString, cb) {
-          var names = this.allData.data.map((x) => {
-            return { value: x.name };
+          var names = this.allData.nodes.map((x) => {
+            return { value: x.label };
           });
           var results = queryString
             ? names.filter(this.createFilter(queryString))
@@ -256,6 +290,12 @@
               });
             }
           }
+        },
+        deleteEdge(source, target) {
+          var idx = this.allData.edges.findIndex((x) => {
+            return x.source === source && x.target === target;
+          });
+          this.allData.edges.splice(idx, 1);
         },
         //----------------------上面为涉及allData的复杂SQL----------------------
         //上传你的文件
@@ -383,7 +423,6 @@
         },
         //节点点击事件
         onClickNodes(params, isFocus) {
-          console.log(params);
           var partParams = {
             id: params.id,
             label: params.label,
@@ -439,8 +478,9 @@
         },
         navNode(e) {
           //跳转节点
-          var { id } = e.target.dataset;
-          this.onClickNodes(this.allData.nodes[Number(id)], true);
+          var { id, source, target } = e.target.dataset;
+          if (id) this.onClickNodes(this.allData.nodes[Number(id)], true);
+          if (source && target) this.deleteEdge(source, target);
         },
         //----------------------Tab 3----------------------
         initNodeCategory() {
