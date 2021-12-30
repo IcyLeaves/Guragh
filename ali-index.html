@@ -222,7 +222,7 @@
             editor.session.setValue(n.extra.code.slice(0));
             this.initNodesArray();
             this.initNodeCategory();
-            this.allData.nodes[n.id] = n;
+            this.allData.nodes[Number(n.id)] = n;
           },
         },
       },
@@ -281,7 +281,7 @@
                 label: this.newTargetNodeName,
                 x: this.nodeInfo.x + Math.floor(Math.random() * 100),
                 y: this.nodeInfo.y + Math.floor(Math.random() * 100),
-                symbolSize: [
+                size: [
                   20 + this.newTargetNodeName.length * 7,
                   this.nodeInfo.size[1],
                 ], //这样才是值传递！直接赋值源节点的数组会造成传了个引用

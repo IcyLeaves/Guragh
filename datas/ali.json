@@ -58,8 +58,8 @@
     {
       "id": "5",
       "label": "ObNestedLoopJoinOp::read_left_func_going",
-      "x": -369.63940036098006,
-      "y": -133.09879095052176,
+      "x": -364.71793247778226,
+      "y": -93.72704788493965,
       "size": [300, 40],
       "category": 5,
       "extra": {
@@ -208,13 +208,21 @@
       "extra": {
         "code": "ObSSTableRowIterator::~ObSSTableRowIterator()\r\n{\r\n  if (NULL != micro_exister_) {\r\n    micro_exister_->~ObMicroBlockRowExister();\r\n    micro_exister_ = NULL;\r\n  }\r\n  if (NULL != micro_getter_) {\r\n    micro_getter_->~ObMicroBlockRowGetter();\r\n    micro_getter_ = NULL;\r\n  }\r\n  if (NULL != micro_scanner_) {\r\n    micro_scanner_->~ObIMicroBlockRowScanner();\r\n    micro_scanner_ = NULL;\r\n  }\r\n  if (NULL != micro_lock_checker_) {\r\n    micro_lock_checker_->~ObMicroBlockRowLockChecker();\r\n    micro_lock_checker_ = NULL;\r\n  }\r\n}"
       }
+    },
+    {
+      "id": "19",
+      "label": "ObNestedLoopJoinOp::read_left_operate",
+      "x": -367.723050511051,
+      "y": -143.76424470412377,
+      "size": [279, 40],
+      "category": 5,
+      "extra": { "code": "hello,world" }
     }
   ],
   "edges": [
     { "source": "0", "target": "1" },
     { "source": "1", "target": "2" },
     { "source": "3", "target": "4" },
-    { "source": "4", "target": "5" },
     { "source": "5", "target": "6" },
     { "source": "6", "target": "7" },
     { "source": "7", "target": "8" },
@@ -228,7 +236,8 @@
     { "source": "13", "target": "15" },
     { "source": "0", "target": "16" },
     { "source": "16", "target": "17" },
-    { "source": "17", "target": "18" }
+    { "source": "17", "target": "18" },
+    { "source": "4", "target": "19" }
   ],
   "categories": [
     { "name": "ObTableScanStoreRowIterator", "fill": "rgb(105, 166, 240)" },
