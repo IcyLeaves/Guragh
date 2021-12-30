@@ -129,6 +129,8 @@
             ></el-autocomplete>
             <el-button type="success" @click="insertNewTargetNode"
               >添加新节点/连接已有节点</el-button
+            ><el-button type="primary" @click="getNode"
+              >跳转到该节点</el-button
             ></el-tab-pane
           ><el-tab-pane label="样式" name="kind">
             <div
@@ -230,7 +232,7 @@
         createFilter(queryString) {
           return (name) => {
             return (
-              name.value.toLowerCase().indexOf(queryString.toLowerCase()) === 0
+              name.value.toLowerCase().indexOf(queryString.toLowerCase()) >= 0
             );
           };
         },
@@ -481,6 +483,18 @@
           var { id, source, target } = e.target.dataset;
           if (id) this.onClickNodes(this.allData.nodes[Number(id)], true);
           if (source && target) this.deleteEdge(source, target);
+        },
+        getNode() {
+          const targetNode = this.g6Chart.find("node", (node) => {
+            return node.get("model").label === this.newTargetNodeName;
+          });
+          if (!targetNode) {
+            this.$message.error("没有这个节点");
+            return;
+          }
+
+          var targetNodeId = targetNode.get("model").id;
+          this.onClickNodes(this.allData.nodes[Number(targetNodeId)], true);
         },
         //----------------------Tab 3----------------------
         initNodeCategory() {
