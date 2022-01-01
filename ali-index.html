@@ -142,21 +142,27 @@
             >
               选择样式
             </div>
-            <el-dropdown trigger="click" @command="updateNodeCategory">
+            <el-dropdown
+              trigger="click"
+              @command="updateNodeCategory"
+              placement="top"
+            >
               <span class="el-dropdown-link">
                 {{nodeCategory.name}}<i
                   class="el-icon-arrow-down el-icon--right"
                 ></i>
               </span>
-              <el-dropdown-menu slot="dropdown">
-                <el-dropdown-item
-                  v-for="(c,idx) in allData.categories"
-                  :key="c.name"
-                  :command="idx"
-                  >{{c.name}}</el-dropdown-item
-                >
-                <el-dropdown-item divided :command="-1"
-                  >+ 新样式</el-dropdown-item
+              <el-dropdown-menu slot="dropdown" style="height: 500px">
+                <el-scrollbar
+                  ><el-dropdown-item
+                    v-for="(c,idx) in allData.categories"
+                    :key="c.name"
+                    :command="idx"
+                    >{{c.name}}</el-dropdown-item
+                  >
+                  <el-dropdown-item divided :command="-1"
+                    >+ 新样式</el-dropdown-item
+                  ></el-scrollbar
                 >
               </el-dropdown-menu>
             </el-dropdown>
