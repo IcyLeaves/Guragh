@@ -1,0 +1,35 @@
+{
+  "nodes": [
+    {
+      "id": "0",
+      "label": "ObTableScanStoreRowIterator",
+      "x": 23.849315170535192,
+      "y": 56.00763988461574,
+      "size": [209, 40],
+      "category": 4,
+      "extra": { "code": "" }
+    },
+    {
+      "id": "1",
+      "label": "ObSSTable",
+      "x": 221.15355353199823,
+      "y": 59.899432558616,
+      "size": [83, 40],
+      "category": 2,
+      "extra": { "code": "" }
+    }
+  ],
+  "edges": [],
+  "categories": [
+    { "name": "默认样式", "fill": "#747474" },
+    { "name": "ObISSTableRowIterator", "fill": "rgb(23, 197, 104)" },
+    { "name": "ObSSTable", "fill": "rgb(240, 105, 105)" },
+    { "name": "ObMultipleScanMerge", "fill": "rgb(240, 217, 105)" },
+    { "name": "ObTableScanStoreRowIterator", "fill": "rgb(105, 166, 240)" },
+    { "name": "ObNestedLoopJoinOp", "fill": "#6B69F0" },
+    { "name": "ObTableScanOp", "fill": "#C369F0" },
+    { "name": "ObSSTableRowIterator", "fill": "#69F08D" },
+    { "name": "ObChunkDatumStore", "fill": "#9E9E9E" },
+    { "name": "ObSEArrayImpl", "fill": "#8D6E63" }
+  ]
+}
