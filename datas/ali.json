@@ -105,7 +105,7 @@
       "x": 389.7553518666723,
       "y": -0.6920063442970701,
       "size": [237, 40],
-      "category": 0,
+      "category": 14,
       "extra": {
         "code": "int ObTableScanIterIterator::rescan(ObTableScanParam& scan_param)\r\n{\r\n  int ret = OB_SUCCESS;\r\n  range_row_iter_.reset();\r\n  if (OB_FAIL(store_row_iter_.rescan(scan_param.key_ranges_, scan_param.range_array_pos_))) {\r\n    STORAGE_LOG(WARN, \"fail to rescan\", K(ret));\r\n  } else if (OB_FAIL(range_row_iter_.init(scan_param.scan_flag_.is_reverse_scan(), store_row_iter_))) {\r\n    STORAGE_LOG(WARN, \"fail to init range row iterator\", K(ret));\r\n  } else {\r\n    const int64_t range_array_cnt = scan_param.range_array_pos_.count();\r\n    is_reverse_scan_ = scan_param.scan_flag_.is_reverse_scan();\r\n    range_array_cnt_ = 0 == range_array_cnt ? 1 : range_array_cnt;  // zero range means whole range\r\n    range_array_cursor_ = is_reverse_scan_ ? range_array_cnt_ : -1;\r\n  }\r\n  return ret;\r\n}"
       }
@@ -398,7 +398,7 @@
       "x": -672.9867526148497,
       "y": -376.35606764942486,
       "size": [314, 40],
-      "category": 0,
+      "category": 10,
       "extra": {
         "code": "int ObBasicNestedLoopJoinOp::get_next_left_row()\r\n{\r\n  if (!get_spec().rescan_params_.empty()) {\r\n    // Reset exec param before get left row, because the exec param still reference\r\n    // to the previous row, when get next left row, it may become wild pointer.\r\n    // The exec parameter may be accessed by the under PX execution by serialization, which\r\n    // serialize whole parameters store.\r\n    ObPhysicalPlanCtx* plan_ctx = GET_PHY_PLAN_CTX(ctx_);\r\n    ParamStore& param_store = plan_ctx->get_param_store_for_update();\r\n    FOREACH_CNT(param, get_spec().rescan_params_)\r\n    {\r\n      param_store.at(param->param_idx_).set_null();\r\n      param->dst_->locate_expr_datum(eval_ctx_).set_null();\r\n    }\r\n  }\r\n  return ObJoinOp::get_next_left_row();\r\n}"
       }
@@ -409,7 +409,7 @@
       "x": -296.9452029688123,
       "y": -373.89745271212826,
       "size": [209, 40],
-      "category": 0,
+      "category": 11,
       "extra": {
         "code": "int ObJoinOp::get_next_left_row()\r\n{\r\n  int ret = common::OB_SUCCESS;\r\n  left_row_joined_ = false;\r\n  if (OB_FAIL(left_->get_next_row()) && OB_ITER_END != ret) {\r\n    LOG_WARN(\"fail to get next left row\", K(ret));\r\n  }\r\n  return ret;\r\n}"
       }
@@ -442,7 +442,7 @@
       "x": -1106.700830137569,
       "y": -517.997331787064,
       "size": [251, 40],
-      "category": 0,
+      "category": 12,
       "extra": {
         "code": "int ObTableScanIterator::get_next_row(common::ObNewRow*& row)\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (NULL == row_iter_) {\r\n    if (OB_FAIL(iter_.get_next_iter(row_iter_))) {\r\n      if (OB_ITER_END != ret) {\r\n        STORAGE_LOG(WARN, \"fail to get next iterator\", K(ret));\r\n      } else {\r\n        STORAGE_LOG(DEBUG, \"table scan iterator reaches end\");\r\n      }\r\n    }\r\n  }\r\n  if (OB_SUCC(ret)) {\r\n    if (OB_FAIL(row_iter_->get_next_row(row))) {\r\n      if (OB_ITER_END != ret) {\r\n        STORAGE_LOG(WARN, \"fail to get next row\", K(ret));\r\n      } else {\r\n        ret = OB_SUCCESS;\r\n        while (OB_SUCC(ret)) {\r\n          if (OB_FAIL(iter_.get_next_iter(row_iter_))) {\r\n            if (OB_ITER_END != ret) {\r\n              STORAGE_LOG(WARN, \"fail to get next iter\", K(ret));\r\n            } else {\r\n              STORAGE_LOG(DEBUG, \"table scan iterator reaches end\");\r\n            }\r\n          } else if (OB_FAIL(row_iter_->get_next_row(row))) {\r\n            if (OB_ITER_END != ret) {\r\n              STORAGE_LOG(WARN, \"fail to get next row\", K(ret));\r\n            } else {\r\n              STORAGE_LOG(DEBUG, \"table scan row iterator reaches end\");\r\n              ret = OB_SUCCESS;\r\n            }\r\n          } else {\r\n            break;\r\n          }\r\n        }\r\n      }\r\n    }\r\n  }\r\n  return ret;\r\n}"
       }
@@ -453,7 +453,7 @@
       "x": -673.8566063653625,
       "y": -130.63558622259825,
       "size": [286, 40],
-      "category": 0,
+      "category": 14,
       "extra": {
         "code": "int ObTableScanIterIterator::get_next_iter(common::ObNewRowIterator*& iter)\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (OB_FAIL(get_next_range())) {\r\n    if (OB_ITER_END != ret) {\r\n      STORAGE_LOG(WARN, \"fail to get next range\", K(ret));\r\n    }\r\n  } else {\r\n    range_row_iter_.set_range_array_idx(range_array_cursor_);\r\n    iter = &range_row_iter_;\r\n  }\r\n  return ret;\r\n}"
       }
@@ -464,7 +464,7 @@
       "x": -283.7084563832118,
       "y": -200.44912042740634,
       "size": [293, 40],
-      "category": 0,
+      "category": 14,
       "extra": {
         "code": "int ObTableScanIterIterator::get_next_range()\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (range_array_cursor_ > range_array_cnt_ || range_array_cursor_ < -1) {\r\n    ret = OB_ITER_END;\r\n  } else {\r\n    range_array_cursor_ = is_reverse_scan_ ? range_array_cursor_ - 1 : range_array_cursor_ + 1;\r\n    ret = range_array_cursor_ >= range_array_cnt_ || range_array_cursor_ < 0 ? OB_ITER_END : OB_SUCCESS;\r\n  }\r\n  return ret;\r\n}"
       }
@@ -472,10 +472,10 @@
     {
       "id": "43",
       "label": "ObTableScanRangeArrayRowIterator::set_range_array_idx",
-      "x": -260.5380845588652,
-      "y": -145.0796721645392,
+      "x": -247.37911955281857,
+      "y": -142.15545771875105,
       "size": [391, 40],
-      "category": 0,
+      "category": 15,
       "extra": {
         "code": "int ObTableScanRangeArrayRowIterator::set_range_array_idx(const int64_t range_array_idx)\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (OB_FAIL(row_iter_->switch_iterator(range_array_idx))) {\r\n    STORAGE_LOG(WARN, \"fail to switch iterator\", K(ret), K(range_array_idx));\r\n  } else {\r\n    curr_range_array_idx_ = range_array_idx;\r\n  }\r\n  return ret;\r\n}"
       }
@@ -495,9 +495,9 @@
       "id": "45",
       "label": "ObMultipleMerge::switch_iterator",
       "x": 528.3055411982238,
-      "y": -225.5155803094073,
+      "y": -154.45716927675505,
       "size": [244, 40],
-      "category": 0,
+      "category": 13,
       "extra": {
         "code": "int ObMultipleMerge::switch_iterator(const int64_t range_array_idx)\r\n{\r\n  int ret = OB_SUCCESS;\r\n  access_ctx_->range_array_cursor_ = range_array_idx;\r\n  access_ctx_->out_cnt_ = 0;\r\n  STORAGE_LOG(DEBUG, \"switch iterator\", K(range_array_idx));\r\n  return ret;\r\n}"
       }
@@ -508,7 +508,7 @@
       "x": -669.4910009530818,
       "y": -74.75138497142089,
       "size": [342, 40],
-      "category": 0,
+      "category": 15,
       "extra": {
         "code": "int ObTableScanRangeArrayRowIterator::get_next_row(common::ObNewRow*& row)\r\n{\r\n  int ret = OB_SUCCESS;\r\n  ObStoreRow* cur_row = NULL;\r\n  if (OB_UNLIKELY(!is_inited_)) {\r\n    ret = OB_NOT_INIT;\r\n    STORAGE_LOG(WARN, \"ObTableScanRangeArrayRowIterator has not been inited\", K(ret));\r\n  } else if (NULL != cur_row_) {\r\n    cur_row = cur_row_;\r\n  } else {\r\n    if (OB_FAIL(row_iter_->get_next_row(cur_row))) {\r\n      if (OB_ITER_END != ret) {\r\n        STORAGE_LOG(WARN, \"fail to get next row\", K(ret));\r\n      }\r\n    } else if (OB_ISNULL(cur_row)) {\r\n      ret = OB_ERR_UNEXPECTED;\r\n      STORAGE_LOG(WARN, \"curr row must not be NULL\", K(ret));\r\n    } else {\r\n      cur_row_ = cur_row;\r\n    }\r\n  }\r\n  if (OB_SUCC(ret)) {\r\n    const int64_t range_array_idx = cur_row->range_array_idx_;\r\n    int comp_ret = static_cast<int32_t>(curr_range_array_idx_ - range_array_idx);\r\n    comp_ret = is_reverse_scan_ ? -comp_ret : comp_ret;\r\n    if (comp_ret > 0) {\r\n      ret = OB_NOT_SUPPORTED;\r\n      STORAGE_LOG(WARN,\r\n          \"switch range array when iterator does not reach end is not supported\",\r\n          K(ret),\r\n          K(curr_range_array_idx_),\r\n          \"curr_row_range_array_idx\",\r\n          range_array_idx,\r\n          K_(is_reverse_scan));\r\n    } else if (0 == comp_ret) {\r\n      row = &(cur_row->row_val_);\r\n      cur_row_ = NULL;\r\n      STORAGE_LOG(DEBUG, \"get next row\", K(*row), K(*cur_row));\r\n    } else if (comp_ret < 0) {\r\n      // curr range is empty\r\n      ret = OB_ITER_END;\r\n      STORAGE_LOG(DEBUG, \"get next row iter end\", K(curr_range_array_idx_), K(range_array_idx));\r\n    }\r\n  }\r\n  return ret;\r\n}"
       }
@@ -530,7 +530,7 @@
       "x": 48.388600800572135,
       "y": -86.69019861848307,
       "size": [223, 40],
-      "category": 0,
+      "category": 13,
       "extra": {
         "code": "int ObMultipleMerge::get_next_row(ObStoreRow*& row)\r\n{\r\n  int ret = OB_SUCCESS;\r\n  if (OB_UNLIKELY(!inited_)) {\r\n    ret = OB_NOT_INIT;\r\n    STORAGE_LOG(WARN, \"The ObMultipleMerge has not been inited, \", K(ret));\r\n  } else {\r\n    bool filtered = false;\r\n    while (OB_SUCC(ret)) {\r\n      if (access_ctx_->is_end()) {\r\n        ret = OB_ITER_END;\r\n      } else if (nullptr != access_ctx_->limit_param_ && access_ctx_->limit_param_->limit_ >= 0 &&\r\n                 access_ctx_->out_cnt_ - access_ctx_->limit_param_->offset_ >= access_ctx_->limit_param_->limit_) {\r\n        ret = OB_ITER_END;\r\n        access_ctx_->is_end_ = !access_ctx_->is_array_binding_;\r\n        if (access_ctx_->is_array_binding_) {\r\n          if (OB_FAIL(skip_to_range(access_ctx_->range_array_pos_->at(access_ctx_->range_array_cursor_) + 1))) {\r\n            if (OB_ITER_END == ret) {\r\n              access_ctx_->is_end_ = true;\r\n            } else {\r\n              STORAGE_LOG(WARN, \"fail to skip range\", K(ret));\r\n            }\r\n          } else {\r\n            if (next_row_ != nullptr && next_row_->range_array_idx_ == access_ctx_->range_array_cursor_) {\r\n              next_row_ = nullptr;\r\n            }\r\n            ret = OB_ITER_END;\r\n          }\r\n        }\r\n      } else if (OB_FAIL(refresh_table_on_demand())) {\r\n        STORAGE_LOG(WARN, \"fail to refresh table on demand\", K(ret));\r\n      } else if (nullptr != next_row_) {\r\n        // reuse the unprojected_row_\r\n      } else if (OB_FAIL(inner_get_next_row(unprojected_row_))) {\r\n        if (OB_ITER_END != ret) {\r\n          STORAGE_LOG(WARN, \"Fail to inner get next row, \", K(ret), KP(this));\r\n        } else {\r\n          skip_refresh_table_ = true;\r\n        }\r\n      }\r\n\r\n      if (OB_SUCCESS == ret) {\r\n        if (OB_FAIL(check_row_in_current_range(unprojected_row_))) {\r\n          if (OB_ARRAY_BINDING_SWITCH_ITERATOR != ret) {\r\n            STORAGE_LOG(WARN, \"fail to check row in current range\", K(ret));\r\n          } else {\r\n            next_row_ = &unprojected_row_;\r\n          }\r\n        } else {\r\n          next_row_ = nullptr;\r\n        }\r\n      }\r\n\r\n      if (OB_SUCCESS == ret) {\r\n        bool is_filtered = false;\r\n        bool not_using_static_engine =\r\n            (access_param_->output_exprs_ == NULL || access_param_->is_index_back_index_scan());\r\n        if (OB_UNLIKELY(NULL != row_filter_) && OB_FAIL(row_filter_->check(unprojected_row_, is_filtered))) {\r\n          STORAGE_LOG(WARN, \"filter row failed\", K(ret), K(unprojected_row_));\r\n        } else if (is_filtered) {\r\n          STORAGE_LOG(DEBUG, \"store row is filtered\", K(unprojected_row_));\r\n          ++filt_cnt_;\r\n        } else if (OB_FAIL((not_using_static_engine) ? project_row(unprojected_row_,\r\n                                                           access_param_->iter_param_.out_cols_project_,\r\n                                                           range_idx_delta_,\r\n                                                           cur_row_)\r\n                                                     : project2output_exprs(unprojected_row_, cur_row_))) {\r\n          STORAGE_LOG(WARN, \"fail to project row\", K(ret));\r\n        } else if (need_fill_default_ && nop_pos_.count() > 0 && OB_FAIL(fuse_default(cur_row_.row_val_))) {\r\n          STORAGE_LOG(WARN, \"Fail to fuse default row, \", K(ret));\r\n        } else if (!need_fill_default_ && !need_output_row_with_nop_ && nop_pos_.count() > 0) {\r\n          // this is for sample scan on increment data, we only output one row if increment data\r\n          // has all the column data needed by the sample scan\r\n          continue;\r\n        } else if (need_padding_ && OB_FAIL(pad_columns(cur_row_.row_val_))) {\r\n          STORAGE_LOG(WARN, \"Fail to padding columns, \", K(ret));\r\n        } else if (need_fill_virtual_columns_ && OB_FAIL(fill_virtual_columns(cur_row_.row_val_))) {\r\n          STORAGE_LOG(WARN, \"Fail to fill virtual columns, \", K(ret));\r\n          // new static type engine, obj is converted to datum, but no meta is used any more, so do not fill scale here\r\n        } else if (not_using_static_engine && access_param_->need_fill_scale_ &&\r\n                   OB_FAIL(fill_scale(cur_row_.row_val_))) {\r\n          STORAGE_LOG(WARN, \"Fail to fill scale\", K(ret));\r\n          // fill_lob_locator need to finish before check_filtered, because:\r\n          // The new expression parameters in new engine is lob locator type, while the expected\r\n          // parameters may not be lob locator, thus can do a implicit cast here.\r\n          // If fill_lob_locator hasn't completed during computing filter condition,\r\n          // the implicit cast can cause problem.\r\n        } else if (not_using_static_engine && OB_UNLIKELY(nullptr != access_ctx_->lob_locator_helper_)) {\r\n          if (!access_ctx_->lob_locator_helper_->is_valid()) {\r\n            ret = OB_ERR_UNEXPECTED;\r\n            STORAGE_LOG(WARN, \"Unexpected lob locator helper\", K(ret), KPC(access_ctx_->lob_locator_helper_));\r\n          } else if (OB_FAIL(\r\n                         access_ctx_->lob_locator_helper_->fill_lob_locator(cur_row_.row_val_, true, *access_param_))) {\r\n            STORAGE_LOG(WARN, \"Failed to fill row with lob locator\", K(ret));\r\n          }\r\n        }\r\n        if (OB_FAIL(ret) || is_filtered) {\r\n        } else if (unprojected_row_.fast_filter_skipped_) {\r\n          filtered = false;\r\n          unprojected_row_.fast_filter_skipped_ = false;\r\n        } else if (OB_FAIL(check_filtered(cur_row_.row_val_, filtered))) {\r\n          STORAGE_LOG(WARN, \"fail to check row filtered\", K(ret));\r\n        }\r\n\r\n        if (OB_FAIL(ret)) {\r\n        } else if (filtered) {\r\n          ++filt_cnt_;\r\n          row = NULL;\r\n        } else {\r\n          row = &cur_row_;\r\n        }\r\n        if (NULL != access_ctx_->table_scan_stat_) {\r\n          access_ctx_->table_scan_stat_->access_row_cnt_++;\r\n        }\r\n      }\r\n\r\n      // check row\r\n      if (OB_SUCC(ret) && nullptr != row) {\r\n        bool out = false;\r\n        if (nullptr != access_ctx_->limit_param_) {\r\n          if (access_ctx_->out_cnt_ < access_ctx_->limit_param_->offset_) {\r\n            if (NULL != access_param_->op_) {\r\n              // clear evaluated flag for next row.\r\n              access_param_->op_->clear_evaluated_flag();\r\n            }\r\n            out = false;\r\n          } else {\r\n            out = true;\r\n          }\r\n        } else {\r\n          out = true;\r\n        }\r\n        ++access_ctx_->out_cnt_;\r\n        if (out) {\r\n          break;\r\n        }\r\n      }\r\n    }\r\n\r\n    if (OB_ITER_END == ret) {\r\n      EVENT_ADD(STORAGE_READ_ROW_COUNT, scan_cnt_);\r\n      if (NULL != access_ctx_->table_scan_stat_) {\r\n        access_ctx_->table_scan_stat_->access_row_cnt_ += row_stat_.filt_del_count_;\r\n        table_stat_.access_row_cnt_ += row_stat_.filt_del_count_;\r\n        access_ctx_->table_scan_stat_->rowkey_prefix_ = access_ctx_->access_stat_.rowkey_prefix_;\r\n        access_ctx_->table_scan_stat_->bf_filter_cnt_ += access_ctx_->access_stat_.bf_filter_cnt_;\r\n        access_ctx_->table_scan_stat_->bf_access_cnt_ += access_ctx_->access_stat_.bf_access_cnt_;\r\n        access_ctx_->table_scan_stat_->empty_read_cnt_ += access_ctx_->access_stat_.empty_read_cnt_;\r\n        access_ctx_->table_scan_stat_->fuse_row_cache_hit_cnt_ += table_stat_.fuse_row_cache_hit_cnt_;\r\n        access_ctx_->table_scan_stat_->fuse_row_cache_miss_cnt_ += table_stat_.fuse_row_cache_miss_cnt_;\r\n        access_ctx_->table_scan_stat_->block_cache_hit_cnt_ += access_ctx_->access_stat_.block_cache_hit_cnt_;\r\n        access_ctx_->table_scan_stat_->block_cache_miss_cnt_ += access_ctx_->access_stat_.block_cache_miss_cnt_;\r\n        access_ctx_->table_scan_stat_->row_cache_hit_cnt_ += access_ctx_->access_stat_.row_cache_hit_cnt_;\r\n        access_ctx_->table_scan_stat_->row_cache_miss_cnt_ += access_ctx_->access_stat_.row_cache_miss_cnt_;\r\n      }\r\n      report_table_store_stat();\r\n    }\r\n    if (OB_SUCC(ret)) {\r\n      if (NULL != access_ctx_->table_scan_stat_) {\r\n        access_ctx_->table_scan_stat_->out_row_cnt_++;\r\n      }\r\n    }\r\n  }\r\n  return ret;\r\n}"
       }
@@ -552,7 +552,7 @@
       "x": -656.473051668982,
       "y": -302.89809348658343,
       "size": [342, 40],
-      "category": 0,
+      "category": 10,
       "extra": {
         "code": "int ObBasicNestedLoopJoinOp::prepare_rescan_params(bool is_group)\r\n{\r\n  int ret = OB_SUCCESS;\r\n  int64_t param_cnt = get_spec().rescan_params_.count();\r\n  for (int64_t i = 0; OB_SUCC(ret) && i < param_cnt; ++i) {\r\n    const ObDynamicParamSetter& rescan_param = get_spec().rescan_params_.at(i);\r\n    if (OB_FAIL(rescan_param.set_dynamic_param(eval_ctx_))) {\r\n      LOG_WARN(\"fail to set dynamic param\", K(ret));\r\n    }\r\n  }\r\n\r\n  if (OB_SUCC(ret) && get_spec().enable_gi_partition_pruning_) {\r\n    ObDatum* datum = nullptr;\r\n    if (OB_FAIL(get_spec().gi_partition_id_expr_->eval(eval_ctx_, datum))) {\r\n      LOG_WARN(\"fail eval value\", K(ret));\r\n    } else {\r\n      int64_t part_id = datum->get_int();\r\n      ctx_.get_gi_pruning_info().set_part_id(part_id);\r\n    }\r\n  }\r\n\r\n  if (OB_SUCC(ret) && !is_group) {\r\n    if (OB_FAIL(open_right_child())) {\r\n      LOG_WARN(\"failed to open right child\", K(ret));\r\n    }\r\n  }\r\n\r\n  return ret;\r\n}"
       }
@@ -657,15 +657,21 @@
     { "source": "20", "target": "54" }
   ],
   "categories": [
-    { "name": "默认样式", "fill": "#747474" },
-    { "name": "ObISSTableRowIterator", "fill": "rgb(23, 197, 104)" },
-    { "name": "ObSSTable", "fill": "rgb(240, 105, 105)" },
-    { "name": "ObMultipleScanMerge", "fill": "rgb(240, 217, 105)" },
-    { "name": "ObTableScanStoreRowIterator", "fill": "rgb(105, 166, 240)" },
-    { "name": "ObNestedLoopJoinOp", "fill": "#6B69F0" },
-    { "name": "ObTableScanOp", "fill": "#C369F0" },
-    { "name": "ObSSTableRowIterator", "fill": "#69F08D" },
+    { "name": "默认样式", "fill": "#424242" },
+    { "name": "ObISSTableRowIterator", "fill": "#1B5E20" },
+    { "name": "ObSSTable", "fill": "#B71C1C" },
+    { "name": "ObMultipleScanMerge", "fill": "#F57F17" },
+    { "name": "ObTableScanStoreRowIterator", "fill": "#004D40" },
+    { "name": "ObNestedLoopJoinOp", "fill": "#4A148C" },
+    { "name": "ObTableScanOp", "fill": "#311B92" },
+    { "name": "ObSSTableRowIterator", "fill": "#388E3C" },
     { "name": "ObChunkDatumStore", "fill": "#9E9E9E" },
-    { "name": "ObSEArrayImpl", "fill": "#8D6E63" }
+    { "name": "ObSEArrayImpl", "fill": "#3E2723" },
+    { "name": "ObBasicNestedLoopJoinOp", "fill": "#000000" },
+    { "name": "ObJoinOp", "fill": "#000000" },
+    { "name": "ObTableScanIterator", "fill": "#000000" },
+    { "name": "ObMultipleMerge", "fill": "#000000" },
+    { "name": "ObTableScanIterIterator", "fill": "#000000" },
+    { "name": "ObTableScanRangeArrayRowIterator", "fill": "#000000" }
   ]
 }

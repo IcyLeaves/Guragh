@@ -3,8 +3,8 @@
     {
       "id": "0",
       "label": "ObTableScanStoreRowIterator",
-      "x": 23.849315170535192,
-      "y": 56.00763988461574,
+      "x": 109.23122432659375,
+      "y": 179.2513417852955,
       "size": [209, 40],
       "category": 4,
       "extra": { "code": "" }
@@ -12,24 +12,197 @@
     {
       "id": "1",
       "label": "ObSSTable",
-      "x": 221.15355353199823,
-      "y": 59.899432558616,
+      "x": -690.4825141732592,
+      "y": 275.30528801017795,
       "size": [83, 40],
       "category": 2,
       "extra": { "code": "" }
+    },
+    {
+      "id": "2",
+      "label": "ObMultipleScanMerge",
+      "x": 337.3002150443816,
+      "y": 231.4800618861173,
+      "size": [153, 40],
+      "category": 3,
+      "extra": { "code": "hello,world" }
+    },
+    {
+      "id": "3",
+      "label": "ObISSTableRowIterator",
+      "x": -155.9999930353818,
+      "y": 280.02760457111367,
+      "size": [167, 40],
+      "category": 1,
+      "extra": {
+        "code": "class ObISSTableRowIterator : public ObStoreRowIterator"
+      }
+    },
+    {
+      "id": "4",
+      "label": "ObNestedLoopJoinOp",
+      "x": -464.9292171302975,
+      "y": 86.306193125091,
+      "size": [146, 40],
+      "category": 5,
+      "extra": {
+        "code": "class ObNestedLoopJoinOp : public ObBasicNestedLoopJoinOp"
+      }
+    },
+    {
+      "id": "5",
+      "label": "ObTableScanOp",
+      "x": -305.2779700755933,
+      "y": 222.44453497713192,
+      "size": [111, 40],
+      "category": 6,
+      "extra": { "code": "class ObTableScanOp : public ObOperator" }
+    },
+    {
+      "id": "6",
+      "label": "ObSSTableRowIterator",
+      "x": -149.6186683777383,
+      "y": 203.81181433783487,
+      "size": [160, 40],
+      "category": 7,
+      "extra": {
+        "code": "class ObSSTableRowIterator : public ObISSTableRowIterator"
+      }
+    },
+    {
+      "id": "7",
+      "label": "ObChunkDatumStore",
+      "x": 601.7539424095081,
+      "y": 178.5882438394562,
+      "size": [139, 40],
+      "category": 8,
+      "extra": { "code": "hello,world" }
+    },
+    {
+      "id": "8",
+      "label": "ObSEArrayImpl",
+      "x": 748.9008889675104,
+      "y": 287.46328584226296,
+      "size": [111, 40],
+      "category": 9,
+      "extra": { "code": "hello,world" }
+    },
+    {
+      "id": "9",
+      "label": "Default",
+      "x": 597.8444284454692,
+      "y": 232.9097074682667,
+      "size": [69, 40],
+      "category": 0,
+      "extra": { "code": "hello,world" }
+    },
+    {
+      "id": "10",
+      "label": "ObBasicNestedLoopJoinOp",
+      "x": -481.5475891074501,
+      "y": 156.96077818892505,
+      "size": [181, 40],
+      "category": 10,
+      "extra": { "code": "class ObBasicNestedLoopJoinOp : public ObJoinOp" }
+    },
+    {
+      "id": "11",
+      "label": "ObJoinOp",
+      "x": -434.3547916394963,
+      "y": 220.97302572457787,
+      "size": [76, 40],
+      "category": 11,
+      "extra": { "code": "class ObJoinOp : public ObOperator" }
+    },
+    {
+      "id": "12",
+      "label": "ObTableScanIterator",
+      "x": 47.79401446387823,
+      "y": 371.80812163394836,
+      "size": [153, 40],
+      "category": 12,
+      "extra": {
+        "code": "class ObTableScanIterator : public common::ObNewRowIterator"
+      }
+    },
+    {
+      "id": "13",
+      "label": "ObMultipleMerge",
+      "x": 337.6078435819777,
+      "y": 303.6253495838261,
+      "size": [125, 40],
+      "category": 13,
+      "extra": { "code": "hello,world" }
+    },
+    {
+      "id": "14",
+      "label": "ObTableScanIterIterator",
+      "x": 251.06492668307038,
+      "y": 399.95649900856273,
+      "size": [181, 40],
+      "category": 14,
+      "extra": {
+        "code": "class ObTableScanIterIterator : public common::ObNewIterIterator"
+      }
+    },
+    {
+      "id": "15",
+      "label": "ObTableScanRangeArrayRowIterator",
+      "x": -231.36867657299393,
+      "y": 400.13056242764355,
+      "size": [244, 40],
+      "category": 15,
+      "extra": {
+        "code": "class ObTableScanRangeArrayRowIterator : public common::ObNewRowIterator"
+      }
+    },
+    {
+      "id": "16",
+      "label": "ObOperator",
+      "x": -442.69370960500294,
+      "y": 280.94572750143834,
+      "size": [90, 40],
+      "category": 16,
+      "extra": { "code": "hello,world" }
+    },
+    {
+      "id": "17",
+      "label": "ObNewRowIterator",
+      "x": 11.945688392460966,
+      "y": 445.50581194206956,
+      "size": [132, 40],
+      "category": 17,
+      "extra": { "code": "hello,world" }
     }
   ],
-  "edges": [],
+  "edges": [
+    { "source": "3", "target": "6" },
+    { "source": "10", "target": "4" },
+    { "source": "11", "target": "10" },
+    { "source": "16", "target": "11" },
+    { "source": "16", "target": "5" },
+    { "source": "17", "target": "15" },
+    { "source": "17", "target": "12" },
+    { "source": "17", "target": "14" }
+  ],
   "categories": [
-    { "name": "默认样式", "fill": "#747474" },
-    { "name": "ObISSTableRowIterator", "fill": "rgb(23, 197, 104)" },
-    { "name": "ObSSTable", "fill": "rgb(240, 105, 105)" },
-    { "name": "ObMultipleScanMerge", "fill": "rgb(240, 217, 105)" },
-    { "name": "ObTableScanStoreRowIterator", "fill": "rgb(105, 166, 240)" },
-    { "name": "ObNestedLoopJoinOp", "fill": "#6B69F0" },
-    { "name": "ObTableScanOp", "fill": "#C369F0" },
-    { "name": "ObSSTableRowIterator", "fill": "#69F08D" },
+    { "name": "默认样式", "fill": "#424242" },
+    { "name": "ObISSTableRowIterator", "fill": "#1B5E20" },
+    { "name": "ObSSTable", "fill": "#B71C1C" },
+    { "name": "ObMultipleScanMerge", "fill": "#FBC02D" },
+    { "name": "ObTableScanStoreRowIterator", "fill": "#004D40" },
+    { "name": "ObNestedLoopJoinOp", "fill": "#BA68C8" },
+    { "name": "ObTableScanOp", "fill": "#673AB7" },
+    { "name": "ObSSTableRowIterator", "fill": "#388E3C" },
     { "name": "ObChunkDatumStore", "fill": "#9E9E9E" },
-    { "name": "ObSEArrayImpl", "fill": "#8D6E63" }
+    { "name": "ObSEArrayImpl", "fill": "#3E2723" },
+    { "name": "ObBasicNestedLoopJoinOp", "fill": "#9C27B0" },
+    { "name": "ObJoinOp", "fill": "#7B1FA2" },
+    { "name": "ObTableScanIterator", "fill": "#00BCD4" },
+    { "name": "ObMultipleMerge", "fill": "#F57F17" },
+    { "name": "ObTableScanIterIterator", "fill": "#4DD0E1" },
+    { "name": "ObTableScanRangeArrayRowIterator", "fill": "#0097A7" },
+    { "name": "ObOperator", "fill": "#4A148C" },
+    { "name": "ObNewRowIterator", "fill": "#006064" }
   ]
 }
