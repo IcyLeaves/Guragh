@@ -166,6 +166,9 @@
                 >
               </el-dropdown-menu>
             </el-dropdown>
+            <el-button type="primary" @click="autoChooseCategory"
+              >自动应用</el-button
+            >
             <el-divider></el-divider>
             <el-form ref="kindForm" :model="nodeCategory" label-width="120px">
               <el-form-item label="样式名称">
@@ -521,6 +524,12 @@
           }
           this.nodeCategory = this.allData.categories[e];
           this.allData.nodes[idx].category = e;
+        },
+        autoChooseCategory() {
+          var idx = this.allData.categories.findIndex((x) => {
+            return x.name === this.nodeInfo.label.split(":")[0];
+          });
+          if (idx >= 0) this.updateNodeCategory(idx);
         },
       },
       mounted: function () {
